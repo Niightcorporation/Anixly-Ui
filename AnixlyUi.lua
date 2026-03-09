@@ -1,10 +1,191 @@
--- Anixly UI Framework - Reusable UI Library
+-- Anixly UI Framework - Reusable UI Library with Key System
 local AnixlyUI = {}
 local IsMobile = game:GetService("UserInputService").TouchEnabled
+
+-- ===== KEY SYSTEM =====
+function AnixlyUI:ShowKeySystem(config)
+    config = config or {}
+    local correctKey = config.Key or "admin123"
+    local title = config.Title or "KEY SYSTEM"
+    local subtitle = config.Subtitle or "Masukkan key untuk melanjutkan"
+    local callback = config.Callback or function() end
+    
+    local popupGui = Instance.new("ScreenGui")
+    popupGui.Name = "KeySystem"
+    popupGui.Parent = game:GetService("CoreGui")
+    popupGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    
+    -- Background blur
+    local bg = Instance.new("Frame")
+    bg.Size = UDim2.new(1, 0, 1, 0)
+    bg.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    bg.BackgroundTransparency = 0.5
+    bg.Parent = popupGui
+    
+    -- Popup frame
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 350, 0, 250)
+    frame.Position = UDim2.new(0.5, -175, 0.5, -125)
+    frame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+    frame.BorderSizePixel = 0
+    frame.Parent = popupGui
+    
+    local frameCorner = Instance.new("UICorner")
+    frameCorner.CornerRadius = UDim.new(0, 16)
+    frameCorner.Parent = frame
+    
+    -- Glow effect
+    local glow = Instance.new("Frame")
+    glow.Size = UDim2.new(1, 4, 1, 4)
+    glow.Position = UDim2.new(0, -2, 0, -2)
+    glow.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
+    glow.BackgroundTransparency = 0.7
+    glow.BorderSizePixel = 0
+    glow.Parent = frame
+    glow.ZIndex = -1
+    
+    local glowCorner = Instance.new("UICorner")
+    glowCorner.CornerRadius = UDim.new(0, 18)
+    glowCorner.Parent = glow
+    
+    -- Title
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Size = UDim2.new(1, 0, 0, 50)
+    titleLabel.Position = UDim2.new(0, 0, 0, 10)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Text = title
+    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.TextSize = 24
+    titleLabel.Parent = frame
+    
+    -- Rainbow title
+    local hue = 0
+    game:GetService("RunService").Heartbeat:Connect(function()
+        hue = (hue + 0.005) % 1
+        titleLabel.TextColor3 = Color3.fromHSV(hue, 1, 1)
+    end)
+    
+    -- Subtitle
+    local subtitleLabel = Instance.new("TextLabel")
+    subtitleLabel.Size = UDim2.new(1, 0, 0, 30)
+    subtitleLabel.Position = UDim2.new(0, 0, 0, 60)
+    subtitleLabel.BackgroundTransparency = 1
+    subtitleLabel.Text = subtitle
+    subtitleLabel.TextColor3 = Color3.fromRGB(200, 200, 255)
+    subtitleLabel.Font = Enum.Font.Gotham
+    subtitleLabel.TextSize = 14
+    subtitleLabel.Parent = frame
+    
+    -- TextBox
+    local textBox = Instance.new("TextBox")
+    textBox.Size = UDim2.new(0, 280, 0, 40)
+    textBox.Position = UDim2.new(0.5, -140, 0, 100)
+    textBox.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    textBox.PlaceholderText = "Masukkan key..."
+    textBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
+    textBox.Text = ""
+    textBox.TextColor3 = Color3.new(1, 1, 1)
+    textBox.Font = Enum.Font.Gotham
+    textBox.TextSize = 16
+    textBox.ClearTextOnFocus = false
+    textBox.Parent = frame
+    
+    local boxCorner = Instance.new("UICorner")
+    boxCorner.CornerRadius = UDim.new(0, 8)
+    boxCorner.Parent = textBox
+    
+    local boxStroke = Instance.new("UIStroke")
+    boxStroke.Color = Color3.fromRGB(255, 255, 0)
+    boxStroke.Thickness = 1
+    boxStroke.Transparency = 0.5
+    boxStroke.Parent = textBox
+    
+    -- Submit button
+    local submitBtn = Instance.new("TextButton")
+    submitBtn.Size = UDim2.new(0, 150, 0, 40)
+    submitBtn.Position = UDim2.new(0.5, -75, 0, 160)
+    submitBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
+    submitBtn.Text = "SUBMIT"
+    submitBtn.TextColor3 = Color3.new(1, 1, 1)
+    submitBtn.Font = Enum.Font.GothamBold
+    submitBtn.TextSize = 18
+    submitBtn.Parent = frame
+    
+    local btnCorner = Instance.new("UICorner")
+    btnCorner.CornerRadius = UDim.new(0, 8)
+    btnCorner.Parent = submitBtn
+    
+    -- Button glow
+    local btnGlow = Instance.new("UIStroke")
+    btnGlow.Color = Color3.fromRGB(255, 255, 255)
+    btnGlow.Thickness = 2
+    btnGlow.Transparency = 0.5
+    btnGlow.Parent = submitBtn
+    
+    -- Error message
+    local errorMsg = Instance.new("TextLabel")
+    errorMsg.Size = UDim2.new(1, 0, 0, 20)
+    errorMsg.Position = UDim2.new(0, 0, 0, 210)
+    errorMsg.BackgroundTransparency = 1
+    errorMsg.Text = ""
+    errorMsg.TextColor3 = Color3.fromRGB(255, 50, 50)
+    errorMsg.Font = Enum.Font.Gotham
+    errorMsg.TextSize = 12
+    errorMsg.Parent = frame
+    
+    -- Submit function
+    local function checkKey()
+        if textBox.Text == correctKey then
+            -- Animasi sukses
+            frame:TweenSize(UDim2.new(0, 400, 0, 300), "Out", "Quad", 0.3, true)
+            task.wait(0.1)
+            popupGui:Destroy()
+            callback(true)
+        else
+            errorMsg.Text = "❌ Key salah! Coba lagi."
+            textBox.Text = ""
+            -- Efek shake
+            frame.Position = UDim2.new(0.5, -175, 0.5, -125)
+            frame:TweenPosition(UDim2.new(0.5, -165, 0.5, -125), "Out", "Quad", 0.05, true)
+            task.wait(0.05)
+            frame:TweenPosition(UDim2.new(0.5, -185, 0.5, -125), "Out", "Quad", 0.05, true)
+            task.wait(0.05)
+            frame:TweenPosition(UDim2.new(0.5, -175, 0.5, -125), "Out", "Quad", 0.05, true)
+        end
+    end
+    
+    submitBtn.MouseButton1Click:Connect(checkKey)
+    
+    textBox.FocusLost:Connect(function(enterPressed)
+        if enterPressed then
+            checkKey()
+        end
+    end)
+    
+    -- Close button on popup
+    local closePopup = Instance.new("ImageButton")
+    closePopup.Size = UDim2.new(0, 24, 0, 24)
+    closePopup.Position = UDim2.new(1, -30, 0, 10)
+    closePopup.BackgroundColor3 = Color3.fromRGB(240, 50, 60)
+    closePopup.Image = "rbxassetid://6023426923"
+    closePopup.ImageColor3 = Color3.new(1, 1, 1)
+    closePopup.Parent = frame
+    
+    local closeCorner = Instance.new("UICorner")
+    closeCorner.CornerRadius = UDim.new(1, 0)
+    closeCorner.Parent = closePopup
+    
+    closePopup.MouseButton1Click:Connect(function()
+        popupGui:Destroy()
+        callback(false)
+    end)
+end
 
 -- Themes
 local THEMES = {
     TOKYO_NIGHT = {
+        name = "Tokyo Night",
         primary = Color3.fromRGB(0, 255, 255),
         mid = Color3.fromRGB(255, 0, 255),
         dark = Color3.fromRGB(10, 10, 30),
@@ -14,25 +195,49 @@ local THEMES = {
         activeTab = Color3.fromRGB(138, 43, 226),
         logText = Color3.fromRGB(200, 200, 255)
     },
-    GALAXY = {
-        primary = Color3.fromRGB(75, 0, 130),
-        mid = Color3.fromRGB(48, 25, 52),
-        dark = Color3.fromRGB(10, 5, 20),
-        headerBg = Color3.fromRGB(45, 15, 70),
-        accent = Color3.fromRGB(255, 215, 0),
-        glow = Color3.fromRGB(138, 43, 226),
-        activeTab = Color3.fromRGB(90, 30, 150),
-        logText = Color3.fromRGB(173, 216, 230)
+    DRACULA = {
+        name = "Dracula",
+        primary = Color3.fromRGB(189, 147, 249),
+        mid = Color3.fromRGB(98, 114, 164),
+        dark = Color3.fromRGB(40, 42, 54),
+        headerBg = Color3.fromRGB(68, 71, 90),
+        accent = Color3.fromRGB(255, 184, 108),
+        glow = Color3.fromRGB(255, 121, 198),
+        activeTab = Color3.fromRGB(80, 250, 123),
+        logText = Color3.fromRGB(241, 250, 140)
     },
-    ROYAL = {
-        primary = Color3.fromRGB(128, 0, 128),
-        mid = Color3.fromRGB(85, 26, 139),
-        dark = Color3.fromRGB(25, 10, 40),
-        headerBg = Color3.fromRGB(75, 0, 130),
+    BLOOD = {
+        name = "Blood Moon",
+        primary = Color3.fromRGB(139, 0, 0),
+        mid = Color3.fromRGB(178, 34, 34),
+        dark = Color3.fromRGB(80, 0, 0),
+        headerBg = Color3.fromRGB(120, 0, 0),
         accent = Color3.fromRGB(255, 215, 0),
-        glow = Color3.fromRGB(147, 112, 219),
-        activeTab = Color3.fromRGB(106, 90, 205),
-        logText = Color3.fromRGB(230, 230, 250)
+        glow = Color3.fromRGB(220, 20, 60),
+        activeTab = Color3.fromRGB(255, 69, 0),
+        logText = Color3.fromRGB(255, 160, 122)
+    },
+    FOREST = {
+        name = "Forest",
+        primary = Color3.fromRGB(34, 139, 34),
+        mid = Color3.fromRGB(0, 100, 0),
+        dark = Color3.fromRGB(0, 50, 0),
+        headerBg = Color3.fromRGB(1, 68, 33),
+        accent = Color3.fromRGB(255, 215, 0),
+        glow = Color3.fromRGB(50, 205, 50),
+        activeTab = Color3.fromRGB(60, 179, 113),
+        logText = Color3.fromRGB(144, 238, 144)
+    },
+    LAVENDER = {
+        name = "Lavender",
+        primary = Color3.fromRGB(230, 230, 250),
+        mid = Color3.fromRGB(216, 191, 216),
+        dark = Color3.fromRGB(147, 112, 219),
+        headerBg = Color3.fromRGB(138, 43, 226),
+        accent = Color3.fromRGB(255, 105, 180),
+        glow = Color3.fromRGB(221, 160, 221),
+        activeTab = Color3.fromRGB(186, 85, 211),
+        logText = Color3.fromRGB(255, 240, 245)
     }
 }
 
@@ -130,15 +335,13 @@ function AnixlyUI:CreateWindow(config)
     -- Window Controls
     local controlSize = IsMobile and 18 or 26
     
-    -- Minimize Button
-    local MinimizeBtn = Instance.new("TextButton")
+    -- Minimize Button (ImageButton)
+    local MinimizeBtn = Instance.new("ImageButton")
     MinimizeBtn.Size = UDim2.new(0, controlSize, 0, controlSize)
     MinimizeBtn.Position = UDim2.new(1, -(controlSize * 2 + 10), 0.5, -controlSize / 2)
     MinimizeBtn.BackgroundColor3 = Color3.fromRGB(250, 190, 0)
-    MinimizeBtn.Text = "−"
-    MinimizeBtn.TextColor3 = Color3.fromRGB(30, 20, 0)
-    MinimizeBtn.Font = Enum.Font.GothamBold
-    MinimizeBtn.TextSize = IsMobile and 14 or 18
+    MinimizeBtn.Image = "rbxassetid://6023426955"
+    MinimizeBtn.ImageColor3 = Color3.fromRGB(30, 20, 0)
     MinimizeBtn.Parent = Header
     MinimizeBtn.ZIndex = 10
     
@@ -146,27 +349,25 @@ function AnixlyUI:CreateWindow(config)
     MinCorner.CornerRadius = UDim.new(1, 0)
     MinCorner.Parent = MinimizeBtn
     
-    -- Close Button
-        -- Close
+    -- Close Button (ImageButton)
     local CloseBtn = Instance.new("ImageButton")
-CloseBtn.Size = UDim2.new(0, controlSize, 0, controlSize)
-CloseBtn.Position = UDim2.new(1, -(controlSize + 6), 0.5, -controlSize / 2)
-CloseBtn.BackgroundColor3 = Color3.fromRGB(240, 50, 60)
-CloseBtn.Image = "rbxassetid://6023426923"  -- Icon close
-CloseBtn.ImageColor3 = Color3.new(1, 1, 1)
-CloseBtn.Parent = Header
-CloseBtn.ZIndex = 10
-
-local CloseCorner = Instance.new("UICorner")
-CloseCorner.CornerRadius = UDim.new(1, 0)
-CloseCorner.Parent = CloseBtn
-
-CloseBtn.MouseButton1Click:Connect(function()
-    ScreenGui:Destroy()
-    IsRunning = false
-end)
+    CloseBtn.Size = UDim2.new(0, controlSize, 0, controlSize)
+    CloseBtn.Position = UDim2.new(1, -(controlSize + 6), 0.5, -controlSize / 2)
+    CloseBtn.BackgroundColor3 = Color3.fromRGB(240, 50, 60)
+    CloseBtn.Image = "rbxassetid://6023426923"
+    CloseBtn.ImageColor3 = Color3.new(1, 1, 1)
+    CloseBtn.Parent = Header
+    CloseBtn.ZIndex = 10
     
-    -- RESIZE HANDLE (untuk resize window)
+    local CloseCorner = Instance.new("UICorner")
+    CloseCorner.CornerRadius = UDim.new(1, 0)
+    CloseCorner.Parent = CloseBtn
+    
+    CloseBtn.MouseButton1Click:Connect(function()
+        ScreenGui:Destroy()
+    end)
+    
+    -- RESIZE HANDLE
     local ResizeHandle = Instance.new("TextButton")
     ResizeHandle.Name = "ResizeHandle"
     ResizeHandle.Size = UDim2.new(0, 20, 0, 20)
@@ -306,7 +507,8 @@ end)
     end)
     
     -- Input handling (drag + resize)
-    game:GetService("UserInputService").InputChanged:Connect(function(input)
+    local UIS = game:GetService("UserInputService")
+    UIS.InputChanged:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
             
             -- RESIZE
@@ -342,7 +544,7 @@ end)
         end
     end)
     
-    game:GetService("UserInputService").InputEnded:Connect(function(input)
+    UIS.InputEnded:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseButton1 or input.UserInputType == Enum.UserInputType.Touch then
             dragging = false
             isResizing = false
@@ -592,7 +794,7 @@ end)
                 btn.Text = ""
                 btn.Parent = frame
                 
-                local state = config.Default
+                local state = config.Default or false
                 
                 btn.MouseButton1Click:Connect(function()
                     state = not state
