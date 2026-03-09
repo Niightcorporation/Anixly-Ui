@@ -1,4 +1,4 @@
--- Anixly UI Framework - Reusable UI Library with Key System
+-- Anixly UI Framework - Reusable UI Library with Key System & Particle Background
 local AnixlyUI = {}
 local IsMobile = game:GetService("UserInputService").TouchEnabled
 
@@ -261,6 +261,7 @@ function AnixlyUI:CreateWindow(config)
     window.Theme = THEMES[config.Theme or "TOKYO_NIGHT"]
     window.Width = config.Size and config.Size.Width or UI_WIDTH
     window.Height = config.Size and config.Size.Height or UI_HEIGHT
+    window.UseParticles = config.UseParticles ~= false  -- Default true
     
     -- Create GUI
     local ScreenGui = Instance.new("ScreenGui")
@@ -268,6 +269,50 @@ function AnixlyUI:CreateWindow(config)
     ScreenGui.Parent = game:GetService("CoreGui")
     ScreenGui.ResetOnSpawn = false
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    
+    -- ===== PARTICLE BACKGROUND =====
+    if window.UseParticles then
+        local particleFolder = Instance.new("Folder")
+        particleFolder.Name = "BackgroundParticles"
+        particleFolder.Parent = ScreenGui
+        
+        -- Buat frame untuk partikel (di belakang UI)
+        local particleFrame = Instance.new("Frame")
+        particleFrame.Size = UDim2.new(1, 0, 1, 0)
+        particleFrame.BackgroundTransparency = 1
+        particleFrame.ZIndex = 0
+        particleFrame.Parent = particleFolder
+        
+        -- Buat attachment (partikel perlu attachment)
+        local attachment = Instance.new("Attachment")
+        attachment.Parent = particleFrame
+        
+        -- Buat partikel
+        local particles = Instance.new("ParticleEmitter")
+        particles.Texture = "rbxasset://textures/particles/sparkles_main.dds"
+        particles.Rate = 30
+        particles.Lifetime = NumberRange.new(4, 8)
+        particles.SpreadAngle = Vector2.new(360, 360)
+        particles.VelocityInheritance = 0
+        particles.Speed = NumberRange.new(5, 15)
+        particles.Rotation = NumberRange.new(0, 360)
+        particles.RotSpeed = NumberRange.new(-20, 20)
+        particles.Size = NumberSequence.new({
+            NumberSequenceKeypoint.new(0, 0.3),
+            NumberSequenceKeypoint.new(0.5, 0.8),
+            NumberSequenceKeypoint.new(1, 0.2)
+        })
+        particles.Transparency = NumberSequence.new(0.6)
+        particles.Color = ColorSequence.new({
+            ColorSequenceKeypoint.new(0, window.Theme.primary),
+            ColorSequenceKeypoint.new(0.5, window.Theme.accent),
+            ColorSequenceKeypoint.new(1, window.Theme.glow)
+        })
+        particles.LightEmission = 0.3
+        particles.LightInfluence = 0
+        particles.ZOffset = -5
+        particles.Parent = attachment
+    end
     
     -- Glow
     local Glow = Instance.new("Frame")
@@ -843,6 +888,113 @@ function AnixlyUI:CreateWindow(config)
                 tab.CurrentOrder = tab.CurrentOrder + 1
                 
                 table.insert(section.Items, label)
+            end
+            
+            function section:AddDropdown(config)
+                local frame = Instance.new("Frame")
+                frame.Size = UDim2.new(1, 0, 0, COMPONENT_HEIGHT)
+                frame.LayoutOrder = tab.CurrentOrder
+                frame.BackgroundColor3 = Color3.fromRGB(16, 15, 24)
+                frame.BorderSizePixel = 0
+                frame.Parent = tab.Container
+                frame.Visible = section.Expanded
+                tab.CurrentOrder = tab.CurrentOrder + 1
+                
+                table.insert(section.Items, frame)
+                
+                local frameCorner = Instance.new("UICorner")
+                frameCorner.CornerRadius = UDim.new(0, 8)
+                frameCorner.Parent = frame
+                
+                local label = Instance.new("TextLabel")
+                label.Size = UDim2.new(1, -80, 1, 0)
+                label.Position = UDim2.new(0, 10, 0, 0)
+                label.BackgroundTransparency = 1
+                label.Text = config.Text
+                label.TextColor3 = Color3.fromRGB(210, 200, 230)
+                label.Font = Enum.Font.GothamBold
+                label.TextSize = TEXT_SIZE_NORMAL
+                label.TextXAlignment = Enum.TextXAlignment.Left
+                label.Parent = frame
+                
+                local valueLabel = Instance.new("TextLabel")
+                valueLabel.Size = UDim2.new(0, 70, 1, 0)
+                valueLabel.Position = UDim2.new(1, -75, 0, 0)
+                valueLabel.BackgroundTransparency = 1
+                valueLabel.Text = config.Default or "-"
+                valueLabel.TextColor3 = window.Theme.accent
+                valueLabel.Font = Enum.Font.GothamBold
+                valueLabel.TextSize = TEXT_SIZE_NORMAL
+                valueLabel.TextXAlignment = Enum.TextXAlignment.Right
+                valueLabel.Parent = frame
+                
+                local btn = Instance.new("TextButton")
+                btn.Size = UDim2.new(1, 0, 1, 0)
+                btn.BackgroundTransparency = 1
+                btn.Text = ""
+                btn.Parent = frame
+                
+                local dropdownOpen = false
+                local dropdownFrame = Instance.new("Frame")
+                dropdownFrame.Size = UDim2.new(1, 0, 0, 0)
+                dropdownFrame.Position = UDim2.new(0, 0, 0, COMPONENT_HEIGHT + 2)
+                dropdownFrame.BackgroundColor3 = Color3.fromRGB(14, 13, 22)
+                dropdownFrame.ClipsDescendants = true
+                dropdownFrame.BorderSizePixel = 0
+                dropdownFrame.Parent = frame
+                dropdownFrame.Visible = false
+                dropdownFrame.ZIndex = 10
+                
+                local dropdownStroke = Instance.new("UIStroke")
+                dropdownStroke.Color = window.Theme.mid
+                dropdownStroke.Thickness = 1
+                dropdownStroke.Transparency = 0.4
+                dropdownStroke.Parent = dropdownFrame
+                
+                local itemHeight = 28
+                local function updateDropdown()
+                    for _, child in pairs(dropdownFrame:GetChildren()) do
+                        if child:IsA("TextButton") then
+                            child:Destroy()
+                        end
+                    end
+                    
+                    for i, option in ipairs(config.Options) do
+                        local itemBtn = Instance.new("TextButton")
+                        itemBtn.Size = UDim2.new(1, -10, 0, itemHeight)
+                        itemBtn.Position = UDim2.new(0, 5, 0, (i-1) * itemHeight + 2)
+                        itemBtn.BackgroundColor3 = (config.Default == option) and Color3.fromRGB(80, 30, 170) or Color3.fromRGB(28, 25, 42)
+                        itemBtn.Text = option
+                        itemBtn.TextColor3 = (config.Default == option) and Color3.new(1, 1, 1) or Color3.fromRGB(200, 190, 220)
+                        itemBtn.Font = Enum.Font.Gotham
+                        itemBtn.TextSize = 12
+                        itemBtn.Parent = dropdownFrame
+                        itemBtn.ZIndex = 11
+                        
+                        local btnCorner = Instance.new("UICorner")
+                        btnCorner.CornerRadius = UDim.new(0, 4)
+                        btnCorner.Parent = itemBtn
+                        
+                        itemBtn.MouseButton1Click:Connect(function()
+                            valueLabel.Text = option
+                            dropdownOpen = false
+                            dropdownFrame.Visible = false
+                            dropdownFrame.Size = UDim2.new(1, 0, 0, 0)
+                            if config.Callback then config.Callback(option) end
+                        end)
+                    end
+                end
+                
+                btn.MouseButton1Click:Connect(function()
+                    dropdownOpen = not dropdownOpen
+                    dropdownFrame.Visible = dropdownOpen
+                    if dropdownOpen then
+                        updateDropdown()
+                        dropdownFrame.Size = UDim2.new(1, 0, 0, #config.Options * itemHeight + 5)
+                    else
+                        dropdownFrame.Size = UDim2.new(1, 0, 0, 0)
+                    end
+                end)
             end
             
             return section
