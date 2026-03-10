@@ -2,7 +2,7 @@
 local AnixlyUI = {}
 local IsMobile = game:GetService("UserInputService").TouchEnabled
 
--- ===== KEY SYSTEM (ENHANCED VERSION) =====
+-- ===== KEY SYSTEM (ENHANCED VERSION - NO BLACK BACKGROUND) =====
 function AnixlyUI:ShowKeySystem(config)
     config = config or {}
     local correctKey = config.Key or "admin123"
@@ -15,39 +15,43 @@ function AnixlyUI:ShowKeySystem(config)
     popupGui.Parent = game:GetService("CoreGui")
     popupGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     popupGui.Enabled = true
+    popupGui.IgnoreGuiInset = true -- Biar full screen
     
-    -- Background blur dengan efek gelap
-    local bg = Instance.new("Frame")
-    bg.Size = UDim2.new(1, 0, 1, 0)
-    bg.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    bg.BackgroundTransparency = 0.6
-    bg.Parent = popupGui
-    
-    -- Efek particle background (sederhana)
+    -- HAPUS BACKGROUND HITAM - LANGSUNG PARTICLE SAJA
+    -- Efek particle background (sederhana) - langsung di root gui
     local particleContainer = Instance.new("Frame")
     particleContainer.Size = UDim2.new(1, 0, 1, 0)
-    particleContainer.BackgroundTransparency = 1
+    particleContainer.BackgroundTransparency = 1 -- Transparan penuh
+    particleContainer.BorderSizePixel = 0
     particleContainer.Parent = popupGui
     
     -- Buat beberapa particle bergerak
     local particles = {}
-    for i = 1, 20 do
+    for i = 1, 30 do -- Tambah jumlah particle biar lebih hidup
         local particle = Instance.new("Frame")
-        particle.Size = UDim2.new(0, math.random(2, 5), 0, math.random(2, 5))
+        particle.Size = UDim2.new(0, math.random(2, 6), 0, math.random(2, 6))
         particle.Position = UDim2.new(math.random(), 0, math.random(), 0)
-        particle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-        particle.BackgroundTransparency = math.random(3, 8)/10
+        -- Warna random antara putih, biru muda, ungu muda
+        local colorChoice = math.random(1, 3)
+        if colorChoice == 1 then
+            particle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        elseif colorChoice == 2 then
+            particle.BackgroundColor3 = Color3.fromRGB(180, 180, 255) -- Biru muda
+        else
+            particle.BackgroundColor3 = Color3.fromRGB(220, 180, 255) -- Ungu muda
+        end
+        particle.BackgroundTransparency = math.random(2, 7)/10
         particle.BorderSizePixel = 0
         particle.Parent = particleContainer
         
         local corner = Instance.new("UICorner")
-        corner.CornerRadius = UDim.new(1, 0)
+        corner.CornerRadius = UDim.new(1, 0) -- Bikin bulat
         corner.Parent = particle
         
         table.insert(particles, {
             frame = particle,
-            speedX = (math.random() - 0.5) * 0.05,
-            speedY = (math.random() - 0.5) * 0.05,
+            speedX = (math.random() - 0.5) * 0.08,
+            speedY = (math.random() - 0.5) * 0.08,
             pos = {X = particle.Position.X.Scale, Y = particle.Position.Y.Scale}
         })
     end
@@ -73,7 +77,7 @@ function AnixlyUI:ShowKeySystem(config)
     frame.Size = UDim2.new(0, 400, 0, 320)
     frame.Position = UDim2.new(0.5, -200, 0.5, -160)
     frame.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
-    frame.BackgroundTransparency = 0.1
+    frame.BackgroundTransparency = 0.15 -- Lebih transparan biar particle keliatan
     frame.BorderSizePixel = 0
     frame.ClipsDescendants = true
     frame.Parent = popupGui
@@ -275,14 +279,14 @@ function AnixlyUI:ShowKeySystem(config)
     shineCorner.Parent = btnShine
     
     -- Shine animation
-    spawn(function()
+    coroutine.wrap(function()
         while submitBtn and submitBtn.Parent do
             btnShine:TweenPosition(UDim2.new(1, 20, 0, 5), "Out", "Quad", 1.5)
             wait(1.5)
             btnShine.Position = UDim2.new(0, -40, 0, 5)
             wait(0.5)
         end
-    end)
+    end)()
     
     -- Error message dengan animasi
     local errorMsg = Instance.new("TextLabel")
@@ -331,8 +335,7 @@ function AnixlyUI:ShowKeySystem(config)
             -- Fade out
             wait(0.5)
             for i = 0, 1, 0.1 do
-                frame.BackgroundTransparency = i
-                bg.BackgroundTransparency = 0.6 + i * 0.4
+                frame.BackgroundTransparency = 0.15 + i * 0.85
                 wait(0.03)
             end
             
@@ -381,25 +384,21 @@ function AnixlyUI:ShowKeySystem(config)
     closePopup.MouseButton1Click:Connect(function()
         -- Fade out animation
         for i = 0, 1, 0.1 do
-            frame.BackgroundTransparency = i
-            bg.BackgroundTransparency = 0.6 + i * 0.4
+            frame.BackgroundTransparency = 0.15 + i * 0.85
             wait(0.03)
         end
         popupGui:Destroy()
         callback(false)
     end)
     
-    -- Tampilkan popup dengan animasi fade in
+    -- Tampilkan popup dengan animasi fade in (tanpa background hitam)
     frame.BackgroundTransparency = 1
-    bg.BackgroundTransparency = 1
     
     for i = 0, 1, 0.1 do
-        frame.BackgroundTransparency = 1 - i
-        bg.BackgroundTransparency = 1 - i * 0.6
+        frame.BackgroundTransparency = 1 - i * 0.85
         wait(0.02)
     end
-    frame.BackgroundTransparency = 0.1
-    bg.BackgroundTransparency = 0.6
+    frame.BackgroundTransparency = 0.15
 end
 
 -- [REST OF THE CODE REMAINS THE SAME - Themes, Window Class, etc.]
