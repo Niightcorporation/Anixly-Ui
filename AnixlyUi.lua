@@ -2,7 +2,7 @@
 local AnixlyUI = {}
 local IsMobile = game:GetService("UserInputService").TouchEnabled
 
--- ===== KEY SYSTEM (ENHANCED VERSION - NO BLACK BACKGROUND) =====
+-- ===== KEY SYSTEM (ENHANCED VERSION - NO WHITE LINE) =====
 function AnixlyUI:ShowKeySystem(config)
     config = config or {}
     local correctKey = config.Key or "admin123"
@@ -17,7 +17,6 @@ function AnixlyUI:ShowKeySystem(config)
     popupGui.Enabled = true
     popupGui.IgnoreGuiInset = true -- Biar full screen
     
-    -- HAPUS BACKGROUND HITAM - LANGSUNG PARTICLE SAJA
     -- Efek particle background (sederhana) - langsung di root gui
     local particleContainer = Instance.new("Frame")
     particleContainer.Size = UDim2.new(1, 0, 1, 0)
@@ -27,7 +26,7 @@ function AnixlyUI:ShowKeySystem(config)
     
     -- Buat beberapa particle bergerak
     local particles = {}
-    for i = 1, 30 do -- Tambah jumlah particle biar lebih hidup
+    for i = 1, 30 do
         local particle = Instance.new("Frame")
         particle.Size = UDim2.new(0, math.random(2, 6), 0, math.random(2, 6))
         particle.Position = UDim2.new(math.random(), 0, math.random(), 0)
@@ -117,22 +116,10 @@ function AnixlyUI:ShowKeySystem(config)
         borderGlow.BackgroundColor3 = Color3.fromHSV(hue, 1, 1)
     end)
     
-    -- Decorative elements
-    local topBar = Instance.new("Frame")
-    topBar.Size = UDim2.new(1, -20, 0, 4)
-    topBar.Position = UDim2.new(0, 10, 0, 10)
-    topBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
-    topBar.BackgroundTransparency = 0.7
-    topBar.BorderSizePixel = 0
-    topBar.Parent = frame
-    
-    local topBarCorner = Instance.new("UICorner")
-    topBarCorner.CornerRadius = UDim.new(1, 0)
-    topBarCorner.Parent = topBar
-    
-    -- Title with icon
+    -- Title with icon (LANGSUNG, tanpa topBar)
     local titleFrame = Instance.new("Frame")
     titleFrame.Size = UDim2.new(1, 0, 0, 70)
+    titleFrame.Position = UDim2.new(0, 0, 0, 10) -- Geser sedikit ke bawah
     titleFrame.BackgroundTransparency = 1
     titleFrame.Parent = frame
     
