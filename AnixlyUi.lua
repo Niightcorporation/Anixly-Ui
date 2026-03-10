@@ -1,8 +1,8 @@
--- Anixly UI Framework - Key System dengan Particle Background
+-- Anixly UI Framework - Reusable UI Library with Key System & Particle Background
 local AnixlyUI = {}
 local IsMobile = game:GetService("UserInputService").TouchEnabled
 
--- ===== KEY SYSTEM DENGAN PARTICLE BACKGROUND =====
+-- ===== KEY SYSTEM =====
 function AnixlyUI:ShowKeySystem(config)
     config = config or {}
     local correctKey = config.Key or "admin123"
@@ -15,84 +15,19 @@ function AnixlyUI:ShowKeySystem(config)
     popupGui.Parent = game:GetService("CoreGui")
     popupGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     
-    -- ===== PARTICLE BACKGROUND =====
-    local particleFolder = Instance.new("Folder")
-    particleFolder.Name = "KeySystemParticles"
-    particleFolder.Parent = popupGui
+    -- Background blur
+    local bg = Instance.new("Frame")
+    bg.Size = UDim2.new(1, 0, 1, 0)
+    bg.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
+    bg.BackgroundTransparency = 0.5
+    bg.Parent = popupGui
     
-    -- Buat frame untuk partikel (full screen)
-    local particleFrame = Instance.new("Frame")
-    particleFrame.Size = UDim2.new(1, 0, 1, 0)
-    particleFrame.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    particleFrame.BackgroundTransparency = 0.2
-    particleFrame.BorderSizePixel = 0
-    particleFrame.ZIndex = 0
-    particleFrame.Parent = particleFolder
-    
-    -- Buat attachment untuk partikel
-    local attachment = Instance.new("Attachment")
-    attachment.Parent = particleFrame
-    
-    -- Buat partikel (efek bercahaya)
-    local particles = Instance.new("ParticleEmitter")
-    particles.Texture = "rbxasset://textures/particles/sparkles_main.dds"
-    particles.Rate = 40
-    particles.Lifetime = NumberRange.new(3, 6)
-    particles.SpreadAngle = Vector2.new(360, 360)
-    particles.VelocityInheritance = 0
-    particles.Speed = NumberRange.new(5, 15)
-    particles.Rotation = NumberRange.new(0, 360)
-    particles.RotSpeed = NumberRange.new(-30, 30)
-    particles.Size = NumberSequence.new({
-        NumberSequenceKeypoint.new(0, 0.4),
-        NumberSequenceKeypoint.new(0.5, 1),
-        NumberSequenceKeypoint.new(1, 0.2)
-    })
-    particles.Transparency = NumberSequence.new(0.7)
-    particles.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 100, 100)),  -- Merah
-        ColorSequenceKeypoint.new(0.33, Color3.fromRGB(100, 255, 100)), -- Hijau
-        ColorSequenceKeypoint.new(0.66, Color3.fromRGB(100, 100, 255)), -- Biru
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(255, 255, 100))  -- Kuning
-    })
-    particles.LightEmission = 0.5
-    particles.LightInfluence = 0
-    particles.ZOffset = -5
-    particles.Parent = attachment
-    
-    -- Buat partikel kedua (efek bintang kecil)
-    local particles2 = Instance.new("ParticleEmitter")
-    particles2.Texture = "rbxasset://textures/particles/glow.png"
-    particles2.Rate = 20
-    particles2.Lifetime = NumberRange.new(2, 4)
-    particles2.SpreadAngle = Vector2.new(360, 360)
-    particles2.VelocityInheritance = 0
-    particles2.Speed = NumberRange.new(2, 8)
-    particles2.Size = NumberSequence.new(0.2)
-    particles2.Transparency = NumberSequence.new(0.8)
-    particles2.Color = ColorSequence.new({
-        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
-        ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 200, 255))
-    })
-    particles2.LightEmission = 0.3
-    particles2.Parent = attachment
-    
-    -- Blur efek (opsional)
-    local blur = Instance.new("Frame")
-    blur.Size = UDim2.new(1, 0, 1, 0)
-    blur.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    blur.BackgroundTransparency = 0.3
-    blur.BorderSizePixel = 0
-    blur.ZIndex = 1
-    blur.Parent = particleFolder
-    
-    -- Popup frame (di atas partikel)
+    -- Popup frame
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(0, 350, 0, 250)
     frame.Position = UDim2.new(0.5, -175, 0.5, -125)
     frame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
     frame.BorderSizePixel = 0
-    frame.ZIndex = 2
     frame.Parent = popupGui
     
     local frameCorner = Instance.new("UICorner")
@@ -107,7 +42,7 @@ function AnixlyUI:ShowKeySystem(config)
     glow.BackgroundTransparency = 0.7
     glow.BorderSizePixel = 0
     glow.Parent = frame
-    glow.ZIndex = 1
+    glow.ZIndex = -1
     
     local glowCorner = Instance.new("UICorner")
     glowCorner.CornerRadius = UDim.new(0, 18)
@@ -122,7 +57,6 @@ function AnixlyUI:ShowKeySystem(config)
     titleLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
     titleLabel.Font = Enum.Font.GothamBold
     titleLabel.TextSize = 24
-    titleLabel.ZIndex = 3
     titleLabel.Parent = frame
     
     -- Rainbow title
@@ -141,7 +75,6 @@ function AnixlyUI:ShowKeySystem(config)
     subtitleLabel.TextColor3 = Color3.fromRGB(200, 200, 255)
     subtitleLabel.Font = Enum.Font.Gotham
     subtitleLabel.TextSize = 14
-    subtitleLabel.ZIndex = 3
     subtitleLabel.Parent = frame
     
     -- TextBox
@@ -156,7 +89,6 @@ function AnixlyUI:ShowKeySystem(config)
     textBox.Font = Enum.Font.Gotham
     textBox.TextSize = 16
     textBox.ClearTextOnFocus = false
-    textBox.ZIndex = 3
     textBox.Parent = frame
     
     local boxCorner = Instance.new("UICorner")
@@ -178,7 +110,6 @@ function AnixlyUI:ShowKeySystem(config)
     submitBtn.TextColor3 = Color3.new(1, 1, 1)
     submitBtn.Font = Enum.Font.GothamBold
     submitBtn.TextSize = 18
-    submitBtn.ZIndex = 3
     submitBtn.Parent = frame
     
     local btnCorner = Instance.new("UICorner")
@@ -201,7 +132,6 @@ function AnixlyUI:ShowKeySystem(config)
     errorMsg.TextColor3 = Color3.fromRGB(255, 50, 50)
     errorMsg.Font = Enum.Font.Gotham
     errorMsg.TextSize = 12
-    errorMsg.ZIndex = 3
     errorMsg.Parent = frame
     
     -- Submit function
@@ -240,7 +170,6 @@ function AnixlyUI:ShowKeySystem(config)
     closePopup.BackgroundColor3 = Color3.fromRGB(240, 50, 60)
     closePopup.Image = "rbxassetid://6023426923"
     closePopup.ImageColor3 = Color3.new(1, 1, 1)
-    closePopup.ZIndex = 4
     closePopup.Parent = frame
     
     local closeCorner = Instance.new("UICorner")
@@ -340,50 +269,6 @@ function AnixlyUI:CreateWindow(config)
     ScreenGui.Parent = game:GetService("CoreGui")
     ScreenGui.ResetOnSpawn = false
     ScreenGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
-    
-    -- ===== PARTICLE BACKGROUND =====
-    if window.UseParticles then
-        local particleFolder = Instance.new("Folder")
-        particleFolder.Name = "BackgroundParticles"
-        particleFolder.Parent = ScreenGui
-        
-        -- Buat frame untuk partikel (di belakang UI)
-        local particleFrame = Instance.new("Frame")
-        particleFrame.Size = UDim2.new(1, 0, 1, 0)
-        particleFrame.BackgroundTransparency = 1
-        particleFrame.ZIndex = 0
-        particleFrame.Parent = particleFolder
-        
-        -- Buat attachment (partikel perlu attachment)
-        local attachment = Instance.new("Attachment")
-        attachment.Parent = particleFrame
-        
-        -- Buat partikel
-        local particles = Instance.new("ParticleEmitter")
-        particles.Texture = "rbxasset://textures/particles/sparkles_main.dds"
-        particles.Rate = 30
-        particles.Lifetime = NumberRange.new(4, 8)
-        particles.SpreadAngle = Vector2.new(360, 360)
-        particles.VelocityInheritance = 0
-        particles.Speed = NumberRange.new(5, 15)
-        particles.Rotation = NumberRange.new(0, 360)
-        particles.RotSpeed = NumberRange.new(-20, 20)
-        particles.Size = NumberSequence.new({
-            NumberSequenceKeypoint.new(0, 0.3),
-            NumberSequenceKeypoint.new(0.5, 0.8),
-            NumberSequenceKeypoint.new(1, 0.2)
-        })
-        particles.Transparency = NumberSequence.new(0.6)
-        particles.Color = ColorSequence.new({
-            ColorSequenceKeypoint.new(0, window.Theme.primary),
-            ColorSequenceKeypoint.new(0.5, window.Theme.accent),
-            ColorSequenceKeypoint.new(1, window.Theme.glow)
-        })
-        particles.LightEmission = 0.3
-        particles.LightInfluence = 0
-        particles.ZOffset = -5
-        particles.Parent = attachment
-    end
     
     -- Glow
     local Glow = Instance.new("Frame")
