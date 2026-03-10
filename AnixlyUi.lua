@@ -1,4 +1,4 @@
--- Anixly UI Framework - Complete Edition with Fixed Save/Load
+-- Anixly UI Framework - Complete Edition
 local AnixlyUI = {}
 local IsMobile = game:GetService("UserInputService").TouchEnabled
 
@@ -521,12 +521,15 @@ function AnixlyUI:SaveConfig(name, data)
         return false
     end
     
+    -- Bersihin nama file dari karakter aneh
+    local safeName = name:gsub("[^%w_%-]", "_")
+    
     -- Simpan ke store
-    ConfigStore[name] = data
+    ConfigStore[safeName] = data
     
     -- Simpan ke file (untuk persistent storage)
     local success, err = pcall(function()
-        writefile("AnixlyConfig_" .. name .. ".json", game:GetService("HttpService"):JSONEncode(data))
+        writefile("AnixlyConfig_" .. safeName .. ".json", game:GetService("HttpService"):JSONEncode(data))
     end)
     
     if success then
@@ -547,14 +550,17 @@ function AnixlyUI:SaveConfig(name, data)
 end
 
 function AnixlyUI:LoadConfig(name)
+    -- Bersihin nama file
+    local safeName = name:gsub("[^%w_%-]", "_")
+    
     -- Coba load dari file
     local success, data = pcall(function()
-        local content = readfile("AnixlyConfig_" .. name .. ".json")
+        local content = readfile("AnixlyConfig_" .. safeName .. ".json")
         return game:GetService("HttpService"):JSONDecode(content)
     end)
     
     if success then
-        ConfigStore[name] = data
+        ConfigStore[safeName] = data
         AnixlyUI:ShowNotification({
             Message = "Config '" .. name .. "' loaded successfully!",
             Theme = "success",
@@ -563,8 +569,8 @@ function AnixlyUI:LoadConfig(name)
         return data
     else
         -- Fallback ke store
-        if ConfigStore[name] then
-            return ConfigStore[name]
+        if ConfigStore[safeName] then
+            return ConfigStore[safeName]
         end
         
         AnixlyUI:ShowNotification({
@@ -576,25 +582,55 @@ function AnixlyUI:LoadConfig(name)
     end
 end
 
+function AnixlyUI:DeleteConfig(name)
+    local safeName = name:gsub("[^%w_%-]", "_")
+    
+    -- Hapus dari store
+    ConfigStore[safeName] = nil
+    
+    -- Hapus dari file
+    local success, err = pcall(function()
+        delfile("AnixlyConfig_" .. safeName .. ".json")
+    end)
+    
+    if success then
+        AnixlyUI:ShowNotification({
+            Message = "Config '" .. name .. "' deleted!",
+            Theme = "warning",
+            Duration = 2
+        })
+        return true
+    else
+        AnixlyUI:ShowNotification({
+            Message = "Failed to delete config: " .. tostring(err),
+            Theme = "error",
+            Duration = 3
+        })
+        return false
+    end
+end
+
 function AnixlyUI:GetSavedConfigs()
     local configs = {}
-    for name, _ in pairs(ConfigStore) do
-        table.insert(configs, name)
-    end
     
-    -- Also scan files
+    -- Scan files
     local success, files = pcall(function()
         return listfiles()
     end)
     
     if success then
         for _, file in ipairs(files) do
-            if file:match("AnixlyConfig_(.+)%.json") then
-                local name = file:match("AnixlyConfig_(.+)%.json")
-                if not table.find(configs, name) then
-                    table.insert(configs, name)
-                end
+            if file:match("AnixlyConfig_(.+)%.json$") then
+                local name = file:match("AnixlyConfig_(.+)%.json$")
+                table.insert(configs, name)
             end
+        end
+    end
+    
+    -- Tambahin dari store juga
+    for name, _ in pairs(ConfigStore) do
+        if not table.find(configs, name) then
+            table.insert(configs, name)
         end
     end
     
@@ -986,7 +1022,7 @@ function AnixlyUI:CreateWindow(config)
         tab.Icon = icon
         tab.Container = Instance.new("ScrollingFrame")
         tab.Container.Size = UDim2.new(1, 0, 1, 0)
-        tab.Container.Position = UDim2.new(0, 0, 0, 40) -- Kasih space untuk search bar
+        tab.Container.Position = UDim2.new(0, 0, 0, 40)
         tab.Container.BackgroundTransparency = 1
         tab.Container.Visible = false
         tab.Container.ScrollBarThickness = IsMobile and 3 or 2
@@ -994,11 +1030,12 @@ function AnixlyUI:CreateWindow(config)
         tab.Container.AutomaticCanvasSize = Enum.AutomaticSize.Y
         tab.Container.Parent = contentArea
         
-        -- Show search bar untuk tab ini
+        -- Show search bar untuk tab biasa, hide untuk settings
         if name ~= "Settings" then
             searchFrame.Visible = true
             tab.Container.Position = UDim2.new(0, 0, 0, 40)
         else
+            searchFrame.Visible = false
             tab.Container.Position = UDim2.new(0, 0, 0, 5)
         end
         
@@ -1057,7 +1094,6 @@ function AnixlyUI:CreateWindow(config)
         
         btn.MouseButton1Click:Connect(function()
             for _, t in ipairs(window.TabButtons) do
-                -- Animasi fade out
                 t.container:TweenSize(UDim2.new(1, 0, 1, 0), "Out", "Quad", 0.1)
                 task.wait(0.05)
                 t.container.Visible = false
@@ -1068,20 +1104,13 @@ function AnixlyUI:CreateWindow(config)
             end
             
             tab.Container.Visible = true
-            tab.Container.Size = UDim2.new(0, 0, 1, 0) -- Mulai dari 0 lebar
-            tab.Container:TweenSize(UDim2.new(1, 0, 1, 0), "Out", "Back", 0.3) -- Animasi muncul
+            tab.Container.Size = UDim2.new(0, 0, 1, 0)
+            tab.Container:TweenSize(UDim2.new(1, 0, 1, 0), "Out", "Back", 0.3)
             
             btn.BackgroundColor3 = window.Theme.activeTab
             btnStroke.Color = window.Theme.accent
             iconLabel.ImageColor3 = Color3.new(1, 1, 1)
             textLabel.TextColor3 = Color3.new(1, 1, 1)
-            
-            -- Show/hide search bar
-            if name ~= "Settings" then
-                searchFrame.Visible = true
-            else
-                searchFrame.Visible = false
-            end
         end)
         
         -- Search functionality
@@ -1097,7 +1126,6 @@ function AnixlyUI:CreateWindow(config)
                             item.Visible = section.Expanded and text:find(searchText) ~= nil
                         end
                     elseif item:IsA("Frame") then
-                        -- Cek label di dalam frame
                         local found = false
                         for _, child in ipairs(item:GetChildren()) do
                             if child:IsA("TextLabel") and child.Text then
@@ -1245,7 +1273,7 @@ function AnixlyUI:CreateWindow(config)
                 
                 local state = config.Default or false
                 
-                -- Simpan state untuk config dengan key yang unik
+                -- Simpan state untuk config
                 local configKey = "Toggle_" .. config.Text
                 window.ConfigData[configKey] = state
                 
@@ -1423,7 +1451,7 @@ function AnixlyUI:CreateWindow(config)
                 end)
             end
             
-            -- SLIDER
+            -- SLIDER (FIXED - BISA DIGESER)
             function section:AddSlider(config)
                 local frame = Instance.new("Frame")
                 frame.Size = UDim2.new(1, 0, 0, 50)
@@ -1451,16 +1479,21 @@ function AnixlyUI:CreateWindow(config)
                 label.TextXAlignment = Enum.TextXAlignment.Left
                 label.Parent = frame
                 
-                local valueLabel = Instance.new("TextLabel")
+                local valueLabel = Instance.new("TextBox")
                 valueLabel.Size = UDim2.new(0, 70, 0, 20)
                 valueLabel.Position = UDim2.new(1, -75, 0, 5)
-                valueLabel.BackgroundTransparency = 1
+                valueLabel.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+                valueLabel.BackgroundTransparency = 0.3
                 valueLabel.Text = tostring(config.Default or config.Min or 0)
                 valueLabel.TextColor3 = window.Theme.accent
                 valueLabel.Font = Enum.Font.GothamBold
                 valueLabel.TextSize = TEXT_SIZE_NORMAL
-                valueLabel.TextXAlignment = Enum.TextXAlignment.Right
+                valueLabel.TextXAlignment = Enum.TextXAlignment.Center
                 valueLabel.Parent = frame
+                
+                local valueCorner = Instance.new("UICorner")
+                valueCorner.CornerRadius = UDim.new(0, 4)
+                valueCorner.Parent = valueLabel
                 
                 local sliderBg = Instance.new("Frame")
                 sliderBg.Size = UDim2.new(1, -20, 0, 8)
@@ -1487,52 +1520,87 @@ function AnixlyUI:CreateWindow(config)
                 fillCorner.CornerRadius = UDim.new(1, 0)
                 fillCorner.Parent = sliderFill
                 
-                local sliderBtn = Instance.new("TextButton")
-                sliderBtn.Size = UDim2.new(1, 0, 1, 0)
-                sliderBtn.BackgroundTransparency = 1
-                sliderBtn.Text = ""
-                sliderBtn.Parent = frame
+                -- BUTTON UNTUK DRAG
+                local dragButton = Instance.new("TextButton")
+                dragButton.Size = UDim2.new(1, 0, 1, 0)
+                dragButton.BackgroundTransparency = 1
+                dragButton.Text = ""
+                dragButton.Parent = sliderBg
+                dragButton.ZIndex = 10
                 
-                local dragging = false
                 local value = defaultValue
+                local dragging = false
                 
                 local configKey = "Slider_" .. config.Text
                 window.ConfigData[configKey] = value
                 
-                local function updateSlider(input)
-                    local pos = input.Position.X
-                    local absPos = sliderBg.AbsolutePosition.X
-                    local absSize = sliderBg.AbsoluteSize.X
-                    
-                    if absSize <= 0 then return end
-                    
-                    local relative = math.clamp((pos - absPos) / absSize, 0, 1)
-                    value = minVal + (maxVal - minVal) * relative
-                    value = math.floor(value * 100) / 100
-                    
-                    sliderFill.Size = UDim2.new(relative, 0, 1, 0)
+                local function updateValue(newValue)
+                    newValue = math.clamp(newValue, minVal, maxVal)
+                    newValue = math.floor(newValue * 100) / 100
+                    value = newValue
                     valueLabel.Text = tostring(value)
-                    window.ConfigData[configKey] = value
                     
+                    local percent = (value - minVal) / (maxVal - minVal)
+                    sliderFill.Size = UDim2.new(percent, 0, 1, 0)
+                    
+                    window.ConfigData[configKey] = value
                     if config.Callback then config.Callback(value) end
                 end
                 
-                sliderBtn.InputBegan:Connect(function(input)
+                -- DRAG FUNCTIONALITY
+                local function onDrag(input)
+                    local mousePos = input.Position.X
+                    local sliderPos = sliderBg.AbsolutePosition.X
+                    local sliderSize = sliderBg.AbsoluteSize.X
+                    
+                    if sliderSize <= 0 then return end
+                    
+                    local relativePos = (mousePos - sliderPos) / sliderSize
+                    relativePos = math.clamp(relativePos, 0, 1)
+                    
+                    local newValue = minVal + (maxVal - minVal) * relativePos
+                    updateValue(newValue)
+                end
+                
+                -- MOUSE BUTTON DOWN
+                dragButton.InputBegan:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
                         dragging = true
-                        updateSlider(input)
+                        onDrag(input)
                     end
                 end)
                 
-                sliderBtn.InputEnded:Connect(function(input)
+                -- MOUSE BUTTON UP
+                dragButton.InputEnded:Connect(function(input)
                     if input.UserInputType == Enum.UserInputType.MouseButton1 then
                         dragging = false
                     end
                 end)
                 
+                -- MOUSE MOVE
                 game:GetService("UserInputService").InputChanged:Connect(function(input)
                     if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
-                        updateSlider(input)
+                        onDrag(input)
+                    end
+                end)
+                
+                -- TEXTBOX MANUAL INPUT
+                valueLabel.FocusLost:Connect(function(enterPressed)
+                    if enterPressed then
+                        local newValue = tonumber(valueLabel.Text)
+                        if newValue then
+                            updateValue(newValue)
+                        else
+                            valueLabel.Text = tostring(value)
+                        end
+                    end
+                end)
+                
+                -- DRAG DARI FILL LANGSUNG
+                sliderFill.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        dragging = true
+                        onDrag(input)
                     end
                 end)
             end
@@ -1665,7 +1733,6 @@ function AnixlyUI:CreateWindow(config)
                 fillCorner.CornerRadius = UDim.new(1, 0)
                 fillCorner.Parent = progressFill
                 
-                -- Return object dengan method SetProgress
                 return {
                     SetProgress = function(percent)
                         percent = math.clamp(percent, 0, 100)
@@ -1705,9 +1772,6 @@ function AnixlyUI:CreateWindow(config)
                 Theme = "success",
                 Duration = 3
             })
-            
-            -- Apply loaded config ke UI (perlu implementasi ulang state)
-            -- Untuk sekarang kita simpan dulu di ConfigData
             return true
         end
         return false
@@ -1718,7 +1782,7 @@ function AnixlyUI:CreateWindow(config)
         if THEMES[themeName] then
             self.Theme = THEMES[themeName]
             
-            -- Update UI elements dengan theme baru
+            -- Update UI elements
             Glow.BackgroundColor3 = self.Theme.glow
             Header.BackgroundColor3 = self.Theme.headerBg
             MiniStroke.Color = self.Theme.accent
@@ -1741,14 +1805,15 @@ function AnixlyUI:CreateWindow(config)
         return self.Theme
     end
     
-    -- SETTINGS TAB (otomatis ditambahkan)
+    -- SETTINGS TAB - THEME DI ATAS SENDIRI
     local settingsTab = window:CreateTab("Settings", "rbxassetid://6023426945")
-    local settingsSection = settingsTab:AddSection("Configuration")
     
-    -- Theme dropdown yang lebih rapi
+    -- SECTION THEME (DI ATAS)
+    local themeSection = settingsTab:AddSection("Theme Settings")
+    
     local themeOptions = AnixlyUI:GetThemes()
-    settingsSection:AddDropdown({
-        Text = "Theme",
+    themeSection:AddDropdown({
+        Text = "Select Theme",
         Options = themeOptions,
         Default = window.Theme.name,
         Callback = function(option)
@@ -1756,15 +1821,115 @@ function AnixlyUI:CreateWindow(config)
         end
     })
     
-    settingsSection:AddButton({
-        Text = "Save Current Config",
+    -- SECTION CONFIGURATION (DI BAWAH)
+    local configSection = settingsTab:AddSection("Configuration")
+    
+    -- Frame untuk save dengan nama kustom
+    local saveFrame = Instance.new("Frame")
+    saveFrame.Size = UDim2.new(1, 0, 0, 70)
+    saveFrame.LayoutOrder = settingsTab.CurrentOrder
+    saveFrame.BackgroundColor3 = Color3.fromRGB(16, 15, 24)
+    saveFrame.BorderSizePixel = 0
+    saveFrame.Parent = settingsTab.Container
+    settingsTab.CurrentOrder = settingsTab.CurrentOrder + 1
+    
+    table.insert(configSection.Items, saveFrame)
+    
+    local saveCorner = Instance.new("UICorner")
+    saveCorner.CornerRadius = UDim.new(0, 8)
+    saveCorner.Parent = saveFrame
+    
+    local saveLabel = Instance.new("TextLabel")
+    saveLabel.Size = UDim2.new(1, -20, 0, 20)
+    saveLabel.Position = UDim2.new(0, 10, 0, 5)
+    saveLabel.BackgroundTransparency = 1
+    saveLabel.Text = "Save Configuration"
+    saveLabel.TextColor3 = Color3.fromRGB(210, 200, 230)
+    saveLabel.Font = Enum.Font.GothamBold
+    saveLabel.TextSize = 13
+    saveLabel.TextXAlignment = Enum.TextXAlignment.Left
+    saveLabel.Parent = saveFrame
+    
+    local nameBox = Instance.new("TextBox")
+    nameBox.Size = UDim2.new(0.7, -5, 0, 30)
+    nameBox.Position = UDim2.new(0, 10, 0, 30)
+    nameBox.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    nameBox.PlaceholderText = "Nama config (contoh: setting_1)"
+    nameBox.PlaceholderColor3 = Color3.fromRGB(140, 140, 180)
+    nameBox.Text = ""
+    nameBox.TextColor3 = Color3.new(1, 1, 1)
+    nameBox.Font = Enum.Font.Gotham
+    nameBox.TextSize = 12
+    nameBox.ClearTextOnFocus = false
+    nameBox.Parent = saveFrame
+    
+    local nameCorner = Instance.new("UICorner")
+    nameCorner.CornerRadius = UDim.new(0, 6)
+    nameCorner.Parent = nameBox
+    
+    local saveBtn = Instance.new("TextButton")
+    saveBtn.Size = UDim2.new(0.3, -5, 0, 30)
+    saveBtn.Position = UDim2.new(0.7, 5, 0, 30)
+    saveBtn.BackgroundColor3 = window.Theme.accent
+    saveBtn.Text = "SAVE"
+    saveBtn.TextColor3 = Color3.new(1, 1, 1)
+    saveBtn.Font = Enum.Font.GothamBold
+    saveBtn.TextSize = 12
+    saveBtn.Parent = saveFrame
+    
+    local saveBtnCorner = Instance.new("UICorner")
+    saveBtnCorner.CornerRadius = UDim.new(0, 6)
+    saveBtnCorner.Parent = saveBtn
+    
+    saveBtn.MouseButton1Click:Connect(function()
+        local configName = nameBox.Text
+        if configName and configName ~= "" then
+            window:SaveConfig(configName)
+            nameBox.Text = ""
+        else
+            AnixlyUI:ShowNotification({
+                Message = "Masukkan nama config terlebih dahulu!",
+                Theme = "warning",
+                Duration = 2
+            })
+        end
+    end)
+    
+    -- Load Config dropdown
+    local configs = AnixlyUI:GetSavedConfigs()
+    if #configs > 0 then
+        configSection:AddDropdown({
+            Text = "Load Config",
+            Options = configs,
+            Default = configs[#configs],
+            Callback = function(option)
+                window:LoadConfig(option)
+            end
+        })
+    end
+    
+    -- Delete Config dropdown
+    if #configs > 0 then
+        configSection:AddDropdown({
+            Text = "Delete Config",
+            Options = configs,
+            Default = configs[1],
+            Callback = function(option)
+                AnixlyUI:DeleteConfig(option)
+            end
+        })
+    end
+    
+    -- Quick save
+    configSection:AddButton({
+        Text = "Quick Save (Auto Name)",
         Callback = function()
             local name = "Config_" .. os.date("%Y%m%d_%H%M%S")
             window:SaveConfig(name)
         end
     })
     
-    settingsSection:AddButton({
+    configSection:AddButton({
         Text = "Load Last Config",
         Callback = function()
             local configs = AnixlyUI:GetSavedConfigs()
@@ -1780,20 +1945,7 @@ function AnixlyUI:CreateWindow(config)
         end
     })
     
-    -- List saved configs
-    local configList = AnixlyUI:GetSavedConfigs()
-    if #configList > 0 then
-        settingsSection:AddDropdown({
-            Text = "Load Config",
-            Options = configList,
-            Default = configList[#configList],
-            Callback = function(option)
-                window:LoadConfig(option)
-            end
-        })
-    end
-    
-    settingsSection:AddLabel("Version 2.0 - Complete Edition")
+    configSection:AddLabel("Version 2.0 - Complete Edition")
     
     -- Show first tab
     if #window.Tabs > 0 then
