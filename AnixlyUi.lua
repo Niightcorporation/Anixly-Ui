@@ -2,11 +2,11 @@
 local AnixlyUI = {}
 local IsMobile = game:GetService("UserInputService").TouchEnabled
 
--- ===== KEY SYSTEM =====
+-- ===== KEY SYSTEM (ENHANCED VERSION) =====
 function AnixlyUI:ShowKeySystem(config)
     config = config or {}
     local correctKey = config.Key or "admin123"
-    local title = config.Title or "KEY SYSTEM"
+    local title = config.Title or "🔐 KEY SYSTEM"
     local subtitle = config.Subtitle or "Masukkan key untuk melanjutkan"
     local callback = config.Callback or function() end
     
@@ -14,173 +14,395 @@ function AnixlyUI:ShowKeySystem(config)
     popupGui.Name = "KeySystem"
     popupGui.Parent = game:GetService("CoreGui")
     popupGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    popupGui.Enabled = true
     
-    -- Background blur
+    -- Background blur dengan efek gelap
     local bg = Instance.new("Frame")
     bg.Size = UDim2.new(1, 0, 1, 0)
     bg.BackgroundColor3 = Color3.fromRGB(0, 0, 0)
-    bg.BackgroundTransparency = 0.5
+    bg.BackgroundTransparency = 0.6
     bg.Parent = popupGui
     
-    -- Popup frame
+    -- Efek particle background (sederhana)
+    local particleContainer = Instance.new("Frame")
+    particleContainer.Size = UDim2.new(1, 0, 1, 0)
+    particleContainer.BackgroundTransparency = 1
+    particleContainer.Parent = popupGui
+    
+    -- Buat beberapa particle bergerak
+    local particles = {}
+    for i = 1, 20 do
+        local particle = Instance.new("Frame")
+        particle.Size = UDim2.new(0, math.random(2, 5), 0, math.random(2, 5))
+        particle.Position = UDim2.new(math.random(), 0, math.random(), 0)
+        particle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+        particle.BackgroundTransparency = math.random(3, 8)/10
+        particle.BorderSizePixel = 0
+        particle.Parent = particleContainer
+        
+        local corner = Instance.new("UICorner")
+        corner.CornerRadius = UDim.new(1, 0)
+        corner.Parent = particle
+        
+        table.insert(particles, {
+            frame = particle,
+            speedX = (math.random() - 0.5) * 0.05,
+            speedY = (math.random() - 0.5) * 0.05,
+            pos = {X = particle.Position.X.Scale, Y = particle.Position.Y.Scale}
+        })
+    end
+    
+    -- Animasi particle
+    game:GetService("RunService").Heartbeat:Connect(function()
+        for _, p in ipairs(particles) do
+            p.pos.X = p.pos.X + p.speedX * 0.01
+            p.pos.Y = p.pos.Y + p.speedY * 0.01
+            
+            -- Wrap around screen
+            if p.pos.X > 1 then p.pos.X = 0 end
+            if p.pos.X < 0 then p.pos.X = 1 end
+            if p.pos.Y > 1 then p.pos.Y = 0 end
+            if p.pos.Y < 0 then p.pos.Y = 1 end
+            
+            p.frame.Position = UDim2.new(p.pos.X, 0, p.pos.Y, 0)
+        end
+    end)
+    
+    -- Main Popup Frame dengan efek glassmorphism
     local frame = Instance.new("Frame")
-    frame.Size = UDim2.new(0, 350, 0, 250)
-    frame.Position = UDim2.new(0.5, -175, 0.5, -125)
-    frame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+    frame.Size = UDim2.new(0, 400, 0, 320)
+    frame.Position = UDim2.new(0.5, -200, 0.5, -160)
+    frame.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
+    frame.BackgroundTransparency = 0.1
     frame.BorderSizePixel = 0
+    frame.ClipsDescendants = true
     frame.Parent = popupGui
     
+    -- Efek blur (menggunakan background transparan + gradient)
     local frameCorner = Instance.new("UICorner")
-    frameCorner.CornerRadius = UDim.new(0, 16)
+    frameCorner.CornerRadius = UDim.new(0, 24)
     frameCorner.Parent = frame
     
-    -- Glow effect
-    local glow = Instance.new("Frame")
-    glow.Size = UDim2.new(1, 4, 1, 4)
-    glow.Position = UDim2.new(0, -2, 0, -2)
-    glow.BackgroundColor3 = Color3.fromRGB(255, 255, 0)
-    glow.BackgroundTransparency = 0.7
-    glow.BorderSizePixel = 0
-    glow.Parent = frame
-    glow.ZIndex = -1
+    -- Gradient overlay
+    local gradient = Instance.new("UIGradient")
+    gradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(255, 255, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(200, 200, 255))
+    })
+    gradient.Transparency = NumberSequence.new(0.95)
+    gradient.Rotation = 45
+    gradient.Parent = frame
     
-    local glowCorner = Instance.new("UICorner")
-    glowCorner.CornerRadius = UDim.new(0, 18)
-    glowCorner.Parent = glow
+    -- Border glow
+    local borderGlow = Instance.new("Frame")
+    borderGlow.Size = UDim2.new(1, 4, 1, 4)
+    borderGlow.Position = UDim2.new(0, -2, 0, -2)
+    borderGlow.BackgroundTransparency = 0.8
+    borderGlow.BorderSizePixel = 0
+    borderGlow.Parent = frame
+    borderGlow.ZIndex = -1
     
-    -- Title
-    local titleLabel = Instance.new("TextLabel")
-    titleLabel.Size = UDim2.new(1, 0, 0, 50)
-    titleLabel.Position = UDim2.new(0, 0, 0, 10)
-    titleLabel.BackgroundTransparency = 1
-    titleLabel.Text = title
-    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 0)
-    titleLabel.Font = Enum.Font.GothamBold
-    titleLabel.TextSize = 24
-    titleLabel.Parent = frame
+    local borderCorner = Instance.new("UICorner")
+    borderCorner.CornerRadius = UDim.new(0, 26)
+    borderCorner.Parent = borderGlow
     
-    -- Rainbow title
+    -- Animated border glow
     local hue = 0
     game:GetService("RunService").Heartbeat:Connect(function()
-        hue = (hue + 0.005) % 1
-        titleLabel.TextColor3 = Color3.fromHSV(hue, 1, 1)
+        hue = (hue + 0.002) % 1
+        borderGlow.BackgroundColor3 = Color3.fromHSV(hue, 1, 1)
+    end)
+    
+    -- Decorative elements
+    local topBar = Instance.new("Frame")
+    topBar.Size = UDim2.new(1, -20, 0, 4)
+    topBar.Position = UDim2.new(0, 10, 0, 10)
+    topBar.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
+    topBar.BackgroundTransparency = 0.7
+    topBar.BorderSizePixel = 0
+    topBar.Parent = frame
+    
+    local topBarCorner = Instance.new("UICorner")
+    topBarCorner.CornerRadius = UDim.new(1, 0)
+    topBarCorner.Parent = topBar
+    
+    -- Title with icon
+    local titleFrame = Instance.new("Frame")
+    titleFrame.Size = UDim2.new(1, 0, 0, 70)
+    titleFrame.BackgroundTransparency = 1
+    titleFrame.Parent = frame
+    
+    local titleIcon = Instance.new("TextLabel")
+    titleIcon.Size = UDim2.new(0, 40, 0, 40)
+    titleIcon.Position = UDim2.new(0.5, -20, 0, 15)
+    titleIcon.BackgroundTransparency = 1
+    titleIcon.Text = "🔐"
+    titleIcon.TextColor3 = Color3.new(1, 1, 1)
+    titleIcon.Font = Enum.Font.GothamBold
+    titleIcon.TextSize = 32
+    titleIcon.Parent = titleFrame
+    
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Size = UDim2.new(1, 0, 0, 30)
+    titleLabel.Position = UDim2.new(0, 0, 0, 55)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Text = title
+    titleLabel.TextColor3 = Color3.fromRGB(255, 255, 255)
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.TextSize = 22
+    titleLabel.Parent = titleFrame
+    
+    -- Rainbow title effect
+    local titleHue = 0
+    game:GetService("RunService").Heartbeat:Connect(function()
+        titleHue = (titleHue + 0.003) % 1
+        titleLabel.TextColor3 = Color3.fromHSV(titleHue, 0.8, 1)
     end)
     
     -- Subtitle
     local subtitleLabel = Instance.new("TextLabel")
-    subtitleLabel.Size = UDim2.new(1, 0, 0, 30)
-    subtitleLabel.Position = UDim2.new(0, 0, 0, 60)
+    subtitleLabel.Size = UDim2.new(1, -40, 0, 40)
+    subtitleLabel.Position = UDim2.new(0, 20, 0, 85)
     subtitleLabel.BackgroundTransparency = 1
     subtitleLabel.Text = subtitle
-    subtitleLabel.TextColor3 = Color3.fromRGB(200, 200, 255)
+    subtitleLabel.TextColor3 = Color3.fromRGB(180, 180, 220)
     subtitleLabel.Font = Enum.Font.Gotham
     subtitleLabel.TextSize = 14
+    subtitleLabel.TextWrapped = true
     subtitleLabel.Parent = frame
     
-    -- TextBox
+    -- Input container
+    local inputContainer = Instance.new("Frame")
+    inputContainer.Size = UDim2.new(1, -40, 0, 70)
+    inputContainer.Position = UDim2.new(0, 20, 0, 135)
+    inputContainer.BackgroundTransparency = 1
+    inputContainer.Parent = frame
+    
+    -- TextBox dengan efek modern
     local textBox = Instance.new("TextBox")
-    textBox.Size = UDim2.new(0, 280, 0, 40)
-    textBox.Position = UDim2.new(0.5, -140, 0, 100)
-    textBox.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
-    textBox.PlaceholderText = "Masukkan key..."
-    textBox.PlaceholderColor3 = Color3.fromRGB(150, 150, 150)
+    textBox.Size = UDim2.new(1, 0, 0, 50)
+    textBox.Position = UDim2.new(0, 0, 0, 10)
+    textBox.BackgroundColor3 = Color3.fromRGB(25, 25, 40)
+    textBox.BackgroundTransparency = 0.3
+    textBox.PlaceholderText = "••••••••"
+    textBox.PlaceholderColor3 = Color3.fromRGB(140, 140, 180)
     textBox.Text = ""
     textBox.TextColor3 = Color3.new(1, 1, 1)
     textBox.Font = Enum.Font.Gotham
-    textBox.TextSize = 16
+    textBox.TextSize = 18
     textBox.ClearTextOnFocus = false
-    textBox.Parent = frame
+    textBox.Parent = inputContainer
     
     local boxCorner = Instance.new("UICorner")
-    boxCorner.CornerRadius = UDim.new(0, 8)
+    boxCorner.CornerRadius = UDim.new(0, 16)
     boxCorner.Parent = textBox
     
-    local boxStroke = Instance.new("UIStroke")
-    boxStroke.Color = Color3.fromRGB(255, 255, 0)
-    boxStroke.Thickness = 1
-    boxStroke.Transparency = 0.5
-    boxStroke.Parent = textBox
+    -- Input icon
+    local inputIcon = Instance.new("TextLabel")
+    inputIcon.Size = UDim2.new(0, 30, 1, 0)
+    inputIcon.Position = UDim2.new(0, 10, 0, 0)
+    inputIcon.BackgroundTransparency = 1
+    inputIcon.Text = "🔑"
+    inputIcon.TextColor3 = Color3.fromRGB(200, 200, 255)
+    inputIcon.Font = Enum.Font.GothamBold
+    inputIcon.TextSize = 20
+    inputIcon.Parent = textBox
     
-    -- Submit button
+    -- Adjust text padding
+    local boxPadding = Instance.new("UIPadding")
+    boxPadding.PaddingLeft = UDim.new(0, 45)
+    boxPadding.Parent = textBox
+    
+    -- Focus effect
+    textBox.Focused:Connect(function()
+        textBox:TweenSize(UDim2.new(1, 0, 0, 54), "Out", "Quad", 0.2)
+    end)
+    
+    textBox.FocusLost:Connect(function()
+        textBox:TweenSize(UDim2.new(1, 0, 0, 50), "Out", "Quad", 0.2)
+    end)
+    
+    -- Button container
+    local btnContainer = Instance.new("Frame")
+    btnContainer.Size = UDim2.new(1, -40, 0, 60)
+    btnContainer.Position = UDim2.new(0, 20, 0, 215)
+    btnContainer.BackgroundTransparency = 1
+    btnContainer.Parent = frame
+    
+    -- Submit button dengan efek gradient
     local submitBtn = Instance.new("TextButton")
-    submitBtn.Size = UDim2.new(0, 150, 0, 40)
-    submitBtn.Position = UDim2.new(0.5, -75, 0, 160)
-    submitBtn.BackgroundColor3 = Color3.fromRGB(0, 150, 255)
-    submitBtn.Text = "SUBMIT"
+    submitBtn.Size = UDim2.new(1, 0, 0, 50)
+    submitBtn.Position = UDim2.new(0, 0, 0, 5)
+    submitBtn.BackgroundColor3 = Color3.fromRGB(80, 60, 200)
+    submitBtn.Text = "VERIFY KEY"
     submitBtn.TextColor3 = Color3.new(1, 1, 1)
     submitBtn.Font = Enum.Font.GothamBold
-    submitBtn.TextSize = 18
-    submitBtn.Parent = frame
+    submitBtn.TextSize = 16
+    submitBtn.AutoButtonColor = false
+    submitBtn.Parent = btnContainer
     
     local btnCorner = Instance.new("UICorner")
-    btnCorner.CornerRadius = UDim.new(0, 8)
+    btnCorner.CornerRadius = UDim.new(0, 16)
     btnCorner.Parent = submitBtn
+    
+    -- Button gradient
+    local btnGradient = Instance.new("UIGradient")
+    btnGradient.Color = ColorSequence.new({
+        ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 80, 255)),
+        ColorSequenceKeypoint.new(1, Color3.fromRGB(60, 40, 200))
+    })
+    btnGradient.Parent = submitBtn
     
     -- Button glow
     local btnGlow = Instance.new("UIStroke")
-    btnGlow.Color = Color3.fromRGB(255, 255, 255)
+    btnGlow.Color = Color3.fromRGB(180, 160, 255)
     btnGlow.Thickness = 2
     btnGlow.Transparency = 0.5
     btnGlow.Parent = submitBtn
     
-    -- Error message
+    -- Button shine effect
+    local btnShine = Instance.new("Frame")
+    btnShine.Size = UDim2.new(0, 40, 1, -10)
+    btnShine.Position = UDim2.new(0, -40, 0, 5)
+    btnShine.BackgroundColor3 = Color3.new(1, 1, 1)
+    btnShine.BackgroundTransparency = 0.5
+    btnShine.BorderSizePixel = 0
+    btnShine.Parent = submitBtn
+    btnShine.ZIndex = 5
+    
+    local shineCorner = Instance.new("UICorner")
+    shineCorner.CornerRadius = UDim.new(0, 16)
+    shineCorner.Parent = btnShine
+    
+    -- Shine animation
+    spawn(function()
+        while submitBtn and submitBtn.Parent do
+            btnShine:TweenPosition(UDim2.new(1, 20, 0, 5), "Out", "Quad", 1.5)
+            wait(1.5)
+            btnShine.Position = UDim2.new(0, -40, 0, 5)
+            wait(0.5)
+        end
+    end)
+    
+    -- Error message dengan animasi
     local errorMsg = Instance.new("TextLabel")
-    errorMsg.Size = UDim2.new(1, 0, 0, 20)
-    errorMsg.Position = UDim2.new(0, 0, 0, 210)
+    errorMsg.Size = UDim2.new(1, -40, 0, 25)
+    errorMsg.Position = UDim2.new(0, 20, 1, -35)
     errorMsg.BackgroundTransparency = 1
     errorMsg.Text = ""
-    errorMsg.TextColor3 = Color3.fromRGB(255, 50, 50)
-    errorMsg.Font = Enum.Font.Gotham
+    errorMsg.TextColor3 = Color3.fromRGB(255, 80, 80)
+    errorMsg.Font = Enum.Font.GothamBold
     errorMsg.TextSize = 12
     errorMsg.Parent = frame
     
-    -- Submit function
+    -- Close button dengan desain modern
+    local closePopup = Instance.new("ImageButton")
+    closePopup.Size = UDim2.new(0, 32, 0, 32)
+    closePopup.Position = UDim2.new(1, -42, 0, 12)
+    closePopup.BackgroundColor3 = Color3.fromRGB(200, 60, 60)
+    closePopup.BackgroundTransparency = 0.2
+    closePopup.Image = "rbxassetid://6023426923"
+    closePopup.ImageColor3 = Color3.new(1, 1, 1)
+    closePopup.Parent = frame
+    
+    local closeCorner = Instance.new("UICorner")
+    closeCorner.CornerRadius = UDim.new(0, 10)
+    closeCorner.Parent = closePopup
+    
+    -- Close button hover effect
+    closePopup.MouseEnter:Connect(function()
+        closePopup:TweenSize(UDim2.new(0, 34, 0, 34), "Out", "Quad", 0.1)
+    end)
+    
+    closePopup.MouseLeave:Connect(function()
+        closePopup:TweenSize(UDim2.new(0, 32, 0, 32), "Out", "Quad", 0.1)
+    end)
+    
+    -- Submit function dengan animasi
     local function checkKey()
         if textBox.Text == correctKey then
             -- Animasi sukses
-            frame:TweenSize(UDim2.new(0, 400, 0, 300), "Out", "Quad", 0.3, true)
-            task.wait(0.1)
+            errorMsg.Text = "✓ ACCESS GRANTED!"
+            errorMsg.TextColor3 = Color3.fromRGB(0, 255, 100)
+            
+            -- Scale up animation
+            frame:TweenSize(UDim2.new(0, 420, 0, 340), "Out", "Back", 0.3, true)
+            
+            -- Fade out
+            wait(0.5)
+            for i = 0, 1, 0.1 do
+                frame.BackgroundTransparency = i
+                bg.BackgroundTransparency = 0.6 + i * 0.4
+                wait(0.03)
+            end
+            
             popupGui:Destroy()
             callback(true)
         else
-            errorMsg.Text = "❌ Key salah! Coba lagi."
+            -- Animasi error
+            errorMsg.Text = "✗ Invalid key! Please try again."
+            errorMsg.TextColor3 = Color3.fromRGB(255, 80, 80)
+            
+            -- Shake effect yang lebih halus
+            local originalPos = frame.Position
+            for i = 1, 5 do
+                frame:TweenPosition(UDim2.new(0.5, -200 + math.random(-8, 8), 0.5, -160 + math.random(-4, 4)), "Out", "Quad", 0.02, true)
+                wait(0.02)
+            end
+            frame:TweenPosition(originalPos, "Out", "Quad", 0.1, true)
+            
+            -- Flash red on textbox
+            textBox.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
+            wait(0.1)
+            textBox.BackgroundColor3 = Color3.fromRGB(25, 25, 40)
+            
             textBox.Text = ""
-            -- Efek shake
-            frame.Position = UDim2.new(0.5, -175, 0.5, -125)
-            frame:TweenPosition(UDim2.new(0.5, -165, 0.5, -125), "Out", "Quad", 0.05, true)
-            task.wait(0.05)
-            frame:TweenPosition(UDim2.new(0.5, -185, 0.5, -125), "Out", "Quad", 0.05, true)
-            task.wait(0.05)
-            frame:TweenPosition(UDim2.new(0.5, -175, 0.5, -125), "Out", "Quad", 0.05, true)
         end
     end
     
     submitBtn.MouseButton1Click:Connect(checkKey)
     
+    -- Enter key support
     textBox.FocusLost:Connect(function(enterPressed)
         if enterPressed then
             checkKey()
         end
     end)
     
-    -- Close button on popup
-    local closePopup = Instance.new("ImageButton")
-    closePopup.Size = UDim2.new(0, 24, 0, 24)
-    closePopup.Position = UDim2.new(1, -30, 0, 10)
-    closePopup.BackgroundColor3 = Color3.fromRGB(240, 50, 60)
-    closePopup.Image = "rbxassetid://6023426923"
-    closePopup.ImageColor3 = Color3.new(1, 1, 1)
-    closePopup.Parent = frame
+    -- Hover effects
+    submitBtn.MouseEnter:Connect(function()
+        submitBtn:TweenSize(UDim2.new(1, 0, 0, 52), "Out", "Quad", 0.1)
+    end)
     
-    local closeCorner = Instance.new("UICorner")
-    closeCorner.CornerRadius = UDim.new(1, 0)
-    closeCorner.Parent = closePopup
+    submitBtn.MouseLeave:Connect(function()
+        submitBtn:TweenSize(UDim2.new(1, 0, 0, 50), "Out", "Quad", 0.1)
+    end)
     
     closePopup.MouseButton1Click:Connect(function()
+        -- Fade out animation
+        for i = 0, 1, 0.1 do
+            frame.BackgroundTransparency = i
+            bg.BackgroundTransparency = 0.6 + i * 0.4
+            wait(0.03)
+        end
         popupGui:Destroy()
         callback(false)
     end)
+    
+    -- Tampilkan popup dengan animasi fade in
+    frame.BackgroundTransparency = 1
+    bg.BackgroundTransparency = 1
+    
+    for i = 0, 1, 0.1 do
+        frame.BackgroundTransparency = 1 - i
+        bg.BackgroundTransparency = 1 - i * 0.6
+        wait(0.02)
+    end
+    frame.BackgroundTransparency = 0.1
+    bg.BackgroundTransparency = 0.6
 end
+
+-- [REST OF THE CODE REMAINS THE SAME - Themes, Window Class, etc.]
 
 -- Themes
 local THEMES = {
