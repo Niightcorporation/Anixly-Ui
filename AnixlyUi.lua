@@ -1,8 +1,134 @@
--- Anixly UI Framework - Reusable UI Library with Key System & Particle Background
+-- Anixly UI Framework - Complete Edition with All Features
 local AnixlyUI = {}
 local IsMobile = game:GetService("UserInputService").TouchEnabled
 
--- ===== KEY SYSTEM (ENHANCED VERSION - NO WHITE LINE) =====
+-- ===== NOTIFICATION SYSTEM =====
+function AnixlyUI:ShowNotification(config)
+    config = config or {}
+    local message = config.Message or "Notification"
+    local duration = config.Duration or 3
+    local theme = config.Theme or "info" -- info, success, error, warning
+    local title = config.Title or "INFO"
+    
+    local colors = {
+        info = {bg = Color3.fromRGB(0, 150, 255), icon = "ℹ"},
+        success = {bg = Color3.fromRGB(0, 255, 100), icon = "✓"},
+        error = {bg = Color3.fromRGB(255, 50, 50), icon = "✗"},
+        warning = {bg = Color3.fromRGB(255, 200, 0), icon = "⚠"}
+    }
+    
+    local notifGui = Instance.new("ScreenGui")
+    notifGui.Name = "Notification"
+    notifGui.Parent = game:GetService("CoreGui")
+    notifGui.IgnoreGuiInset = true
+    notifGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
+    
+    local frame = Instance.new("Frame")
+    frame.Size = UDim2.new(0, 320, 0, 70)
+    frame.Position = UDim2.new(1, -340, 1, -90)
+    frame.BackgroundColor3 = Color3.fromRGB(20, 20, 30)
+    frame.BackgroundTransparency = 0.1
+    frame.BorderSizePixel = 0
+    frame.ClipsDescendants = true
+    frame.Parent = notifGui
+    
+    local frameCorner = Instance.new("UICorner")
+    frameCorner.CornerRadius = UDim.new(0, 16)
+    frameCorner.Parent = frame
+    
+    -- Left accent bar
+    local accentBar = Instance.new("Frame")
+    accentBar.Size = UDim2.new(0, 6, 1, 0)
+    accentBar.BackgroundColor3 = colors[theme].bg
+    accentBar.BorderSizePixel = 0
+    accentBar.Parent = frame
+    
+    local barCorner = Instance.new("UICorner")
+    barCorner.CornerRadius = UDim.new(0, 3)
+    barCorner.Parent = accentBar
+    
+    -- Icon
+    local icon = Instance.new("TextLabel")
+    icon.Size = UDim2.new(0, 30, 0, 30)
+    icon.Position = UDim2.new(0, 16, 0.5, -15)
+    icon.BackgroundColor3 = colors[theme].bg
+    icon.BackgroundTransparency = 0.3
+    icon.Text = colors[theme].icon
+    icon.TextColor3 = Color3.new(1, 1, 1)
+    icon.Font = Enum.Font.GothamBold
+    icon.TextSize = 20
+    icon.Parent = frame
+    
+    local iconCorner = Instance.new("UICorner")
+    iconCorner.CornerRadius = UDim.new(0, 8)
+    iconCorner.Parent = icon
+    
+    -- Title
+    local titleLabel = Instance.new("TextLabel")
+    titleLabel.Size = UDim2.new(1, -70, 0, 20)
+    titleLabel.Position = UDim2.new(0, 55, 0, 12)
+    titleLabel.BackgroundTransparency = 1
+    titleLabel.Text = title
+    titleLabel.TextColor3 = colors[theme].bg
+    titleLabel.Font = Enum.Font.GothamBold
+    titleLabel.TextSize = 14
+    titleLabel.TextXAlignment = Enum.TextXAlignment.Left
+    titleLabel.Parent = frame
+    
+    -- Message
+    local msgLabel = Instance.new("TextLabel")
+    msgLabel.Size = UDim2.new(1, -70, 0, 30)
+    msgLabel.Position = UDim2.new(0, 55, 0, 30)
+    msgLabel.BackgroundTransparency = 1
+    msgLabel.Text = message
+    msgLabel.TextColor3 = Color3.fromRGB(220, 220, 255)
+    msgLabel.Font = Enum.Font.Gotham
+    msgLabel.TextSize = 13
+    msgLabel.TextWrapped = true
+    msgLabel.TextXAlignment = Enum.TextXAlignment.Left
+    msgLabel.TextYAlignment = Enum.TextYAlignment.Top
+    msgLabel.Parent = frame
+    
+    -- Close button
+    local closeBtn = Instance.new("ImageButton")
+    closeBtn.Size = UDim2.new(0, 20, 0, 20)
+    closeBtn.Position = UDim2.new(1, -28, 0, 10)
+    closeBtn.BackgroundTransparency = 1
+    closeBtn.Image = "rbxassetid://6023426923"
+    closeBtn.ImageColor3 = Color3.fromRGB(150, 150, 150)
+    closeBtn.Parent = frame
+    
+    closeBtn.MouseButton1Click:Connect(function()
+        frame:TweenPosition(UDim2.new(1, 20, 1, -90), "Out", "Quad", 0.3)
+        task.wait(0.3)
+        notifGui:Destroy()
+    end)
+    
+    -- Hover effect
+    frame.MouseEnter:Connect(function()
+        frame:TweenSize(UDim2.new(0, 330, 0, 75), "Out", "Quad", 0.2)
+    end)
+    
+    frame.MouseLeave:Connect(function()
+        frame:TweenSize(UDim2.new(0, 320, 0, 70), "Out", "Quad", 0.2)
+    end)
+    
+    -- Animasi masuk
+    frame.Position = UDim2.new(1, 20, 1, -90)
+    frame:TweenPosition(UDim2.new(1, -340, 1, -90), "Out", "Quad", 0.3)
+    
+    -- Auto close
+    if duration > 0 then
+        task.wait(duration)
+        if notifGui and notifGui.Parent then
+            frame:TweenPosition(UDim2.new(1, 20, 1, -90), "Out", "Quad", 0.3)
+            task.wait(0.3)
+            notifGui:Destroy()
+        end
+    end
+end
+
+-- ===== KEY SYSTEM =====
 function AnixlyUI:ShowKeySystem(config)
     config = config or {}
     local correctKey = config.Key or "admin123"
@@ -15,36 +141,34 @@ function AnixlyUI:ShowKeySystem(config)
     popupGui.Parent = game:GetService("CoreGui")
     popupGui.ZIndexBehavior = Enum.ZIndexBehavior.Sibling
     popupGui.Enabled = true
-    popupGui.IgnoreGuiInset = true -- Biar full screen
+    popupGui.IgnoreGuiInset = true
     
-    -- Efek particle background (sederhana) - langsung di root gui
+    -- Particle background
     local particleContainer = Instance.new("Frame")
     particleContainer.Size = UDim2.new(1, 0, 1, 0)
-    particleContainer.BackgroundTransparency = 1 -- Transparan penuh
+    particleContainer.BackgroundTransparency = 1
     particleContainer.BorderSizePixel = 0
     particleContainer.Parent = popupGui
     
-    -- Buat beberapa particle bergerak
     local particles = {}
     for i = 1, 30 do
         local particle = Instance.new("Frame")
         particle.Size = UDim2.new(0, math.random(2, 6), 0, math.random(2, 6))
         particle.Position = UDim2.new(math.random(), 0, math.random(), 0)
-        -- Warna random antara putih, biru muda, ungu muda
         local colorChoice = math.random(1, 3)
         if colorChoice == 1 then
             particle.BackgroundColor3 = Color3.fromRGB(255, 255, 255)
         elseif colorChoice == 2 then
-            particle.BackgroundColor3 = Color3.fromRGB(180, 180, 255) -- Biru muda
+            particle.BackgroundColor3 = Color3.fromRGB(180, 180, 255)
         else
-            particle.BackgroundColor3 = Color3.fromRGB(220, 180, 255) -- Ungu muda
+            particle.BackgroundColor3 = Color3.fromRGB(220, 180, 255)
         end
         particle.BackgroundTransparency = math.random(2, 7)/10
         particle.BorderSizePixel = 0
         particle.Parent = particleContainer
         
         local corner = Instance.new("UICorner")
-        corner.CornerRadius = UDim.new(1, 0) -- Bikin bulat
+        corner.CornerRadius = UDim.new(1, 0)
         corner.Parent = particle
         
         table.insert(particles, {
@@ -55,33 +179,28 @@ function AnixlyUI:ShowKeySystem(config)
         })
     end
     
-    -- Animasi particle
     game:GetService("RunService").Heartbeat:Connect(function()
         for _, p in ipairs(particles) do
             p.pos.X = p.pos.X + p.speedX * 0.01
             p.pos.Y = p.pos.Y + p.speedY * 0.01
-            
-            -- Wrap around screen
             if p.pos.X > 1 then p.pos.X = 0 end
             if p.pos.X < 0 then p.pos.X = 1 end
             if p.pos.Y > 1 then p.pos.Y = 0 end
             if p.pos.Y < 0 then p.pos.Y = 1 end
-            
             p.frame.Position = UDim2.new(p.pos.X, 0, p.pos.Y, 0)
         end
     end)
     
-    -- Main Popup Frame dengan efek glassmorphism
+    -- Main Popup
     local frame = Instance.new("Frame")
     frame.Size = UDim2.new(0, 400, 0, 320)
     frame.Position = UDim2.new(0.5, -200, 0.5, -160)
     frame.BackgroundColor3 = Color3.fromRGB(15, 15, 25)
-    frame.BackgroundTransparency = 0.15 -- Lebih transparan biar particle keliatan
+    frame.BackgroundTransparency = 0.15
     frame.BorderSizePixel = 0
     frame.ClipsDescendants = true
     frame.Parent = popupGui
     
-    -- Efek blur (menggunakan background transparan + gradient)
     local frameCorner = Instance.new("UICorner")
     frameCorner.CornerRadius = UDim.new(0, 24)
     frameCorner.Parent = frame
@@ -109,17 +228,16 @@ function AnixlyUI:ShowKeySystem(config)
     borderCorner.CornerRadius = UDim.new(0, 26)
     borderCorner.Parent = borderGlow
     
-    -- Animated border glow
     local hue = 0
     game:GetService("RunService").Heartbeat:Connect(function()
         hue = (hue + 0.002) % 1
         borderGlow.BackgroundColor3 = Color3.fromHSV(hue, 1, 1)
     end)
     
-    -- Title with icon (LANGSUNG, tanpa topBar)
+    -- Title
     local titleFrame = Instance.new("Frame")
     titleFrame.Size = UDim2.new(1, 0, 0, 70)
-    titleFrame.Position = UDim2.new(0, 0, 0, 10) -- Geser sedikit ke bawah
+    titleFrame.Position = UDim2.new(0, 0, 0, 10)
     titleFrame.BackgroundTransparency = 1
     titleFrame.Parent = frame
     
@@ -143,7 +261,6 @@ function AnixlyUI:ShowKeySystem(config)
     titleLabel.TextSize = 22
     titleLabel.Parent = titleFrame
     
-    -- Rainbow title effect
     local titleHue = 0
     game:GetService("RunService").Heartbeat:Connect(function()
         titleHue = (titleHue + 0.003) % 1
@@ -162,14 +279,13 @@ function AnixlyUI:ShowKeySystem(config)
     subtitleLabel.TextWrapped = true
     subtitleLabel.Parent = frame
     
-    -- Input container
+    -- Input
     local inputContainer = Instance.new("Frame")
     inputContainer.Size = UDim2.new(1, -40, 0, 70)
     inputContainer.Position = UDim2.new(0, 20, 0, 135)
     inputContainer.BackgroundTransparency = 1
     inputContainer.Parent = frame
     
-    -- TextBox dengan efek modern
     local textBox = Instance.new("TextBox")
     textBox.Size = UDim2.new(1, 0, 0, 50)
     textBox.Position = UDim2.new(0, 0, 0, 10)
@@ -188,7 +304,6 @@ function AnixlyUI:ShowKeySystem(config)
     boxCorner.CornerRadius = UDim.new(0, 16)
     boxCorner.Parent = textBox
     
-    -- Input icon
     local inputIcon = Instance.new("TextLabel")
     inputIcon.Size = UDim2.new(0, 30, 1, 0)
     inputIcon.Position = UDim2.new(0, 10, 0, 0)
@@ -199,28 +314,17 @@ function AnixlyUI:ShowKeySystem(config)
     inputIcon.TextSize = 20
     inputIcon.Parent = textBox
     
-    -- Adjust text padding
     local boxPadding = Instance.new("UIPadding")
     boxPadding.PaddingLeft = UDim.new(0, 45)
     boxPadding.Parent = textBox
     
-    -- Focus effect
-    textBox.Focused:Connect(function()
-        textBox:TweenSize(UDim2.new(1, 0, 0, 54), "Out", "Quad", 0.2)
-    end)
-    
-    textBox.FocusLost:Connect(function()
-        textBox:TweenSize(UDim2.new(1, 0, 0, 50), "Out", "Quad", 0.2)
-    end)
-    
-    -- Button container
+    -- Button
     local btnContainer = Instance.new("Frame")
     btnContainer.Size = UDim2.new(1, -40, 0, 60)
     btnContainer.Position = UDim2.new(0, 20, 0, 215)
     btnContainer.BackgroundTransparency = 1
     btnContainer.Parent = frame
     
-    -- Submit button dengan efek gradient
     local submitBtn = Instance.new("TextButton")
     submitBtn.Size = UDim2.new(1, 0, 0, 50)
     submitBtn.Position = UDim2.new(0, 0, 0, 5)
@@ -236,7 +340,6 @@ function AnixlyUI:ShowKeySystem(config)
     btnCorner.CornerRadius = UDim.new(0, 16)
     btnCorner.Parent = submitBtn
     
-    -- Button gradient
     local btnGradient = Instance.new("UIGradient")
     btnGradient.Color = ColorSequence.new({
         ColorSequenceKeypoint.new(0, Color3.fromRGB(100, 80, 255)),
@@ -244,38 +347,7 @@ function AnixlyUI:ShowKeySystem(config)
     })
     btnGradient.Parent = submitBtn
     
-    -- Button glow
-    local btnGlow = Instance.new("UIStroke")
-    btnGlow.Color = Color3.fromRGB(180, 160, 255)
-    btnGlow.Thickness = 2
-    btnGlow.Transparency = 0.5
-    btnGlow.Parent = submitBtn
-    
-    -- Button shine effect
-    local btnShine = Instance.new("Frame")
-    btnShine.Size = UDim2.new(0, 40, 1, -10)
-    btnShine.Position = UDim2.new(0, -40, 0, 5)
-    btnShine.BackgroundColor3 = Color3.new(1, 1, 1)
-    btnShine.BackgroundTransparency = 0.5
-    btnShine.BorderSizePixel = 0
-    btnShine.Parent = submitBtn
-    btnShine.ZIndex = 5
-    
-    local shineCorner = Instance.new("UICorner")
-    shineCorner.CornerRadius = UDim.new(0, 16)
-    shineCorner.Parent = btnShine
-    
-    -- Shine animation
-    coroutine.wrap(function()
-        while submitBtn and submitBtn.Parent do
-            btnShine:TweenPosition(UDim2.new(1, 20, 0, 5), "Out", "Quad", 1.5)
-            wait(1.5)
-            btnShine.Position = UDim2.new(0, -40, 0, 5)
-            wait(0.5)
-        end
-    end)()
-    
-    -- Error message dengan animasi
+    -- Error message
     local errorMsg = Instance.new("TextLabel")
     errorMsg.Size = UDim2.new(1, -40, 0, 25)
     errorMsg.Position = UDim2.new(0, 20, 1, -35)
@@ -286,7 +358,7 @@ function AnixlyUI:ShowKeySystem(config)
     errorMsg.TextSize = 12
     errorMsg.Parent = frame
     
-    -- Close button dengan desain modern
+    -- Close button
     local closePopup = Instance.new("ImageButton")
     closePopup.Size = UDim2.new(0, 32, 0, 32)
     closePopup.Position = UDim2.new(1, -42, 0, 12)
@@ -300,87 +372,48 @@ function AnixlyUI:ShowKeySystem(config)
     closeCorner.CornerRadius = UDim.new(0, 10)
     closeCorner.Parent = closePopup
     
-    -- Close button hover effect
-    closePopup.MouseEnter:Connect(function()
-        closePopup:TweenSize(UDim2.new(0, 34, 0, 34), "Out", "Quad", 0.1)
-    end)
-    
-    closePopup.MouseLeave:Connect(function()
-        closePopup:TweenSize(UDim2.new(0, 32, 0, 32), "Out", "Quad", 0.1)
-    end)
-    
-    -- Submit function dengan animasi
     local function checkKey()
         if textBox.Text == correctKey then
-            -- Animasi sukses
             errorMsg.Text = "✓ ACCESS GRANTED!"
             errorMsg.TextColor3 = Color3.fromRGB(0, 255, 100)
-            
-            -- Scale up animation
             frame:TweenSize(UDim2.new(0, 420, 0, 340), "Out", "Back", 0.3, true)
-            
-            -- Fade out
             wait(0.5)
-            for i = 0, 1, 0.1 do
-                frame.BackgroundTransparency = 0.15 + i * 0.85
-                wait(0.03)
-            end
-            
             popupGui:Destroy()
             callback(true)
+            AnixlyUI:ShowNotification({
+                Message = "Welcome! Key verified successfully",
+                Theme = "success",
+                Title = "SUCCESS",
+                Duration = 3
+            })
         else
-            -- Animasi error
             errorMsg.Text = "✗ Invalid key! Please try again."
             errorMsg.TextColor3 = Color3.fromRGB(255, 80, 80)
-            
-            -- Shake effect yang lebih halus
             local originalPos = frame.Position
             for i = 1, 5 do
                 frame:TweenPosition(UDim2.new(0.5, -200 + math.random(-8, 8), 0.5, -160 + math.random(-4, 4)), "Out", "Quad", 0.02, true)
                 wait(0.02)
             end
             frame:TweenPosition(originalPos, "Out", "Quad", 0.1, true)
-            
-            -- Flash red on textbox
             textBox.BackgroundColor3 = Color3.fromRGB(255, 100, 100)
             wait(0.1)
             textBox.BackgroundColor3 = Color3.fromRGB(25, 25, 40)
-            
             textBox.Text = ""
         end
     end
     
     submitBtn.MouseButton1Click:Connect(checkKey)
-    
-    -- Enter key support
     textBox.FocusLost:Connect(function(enterPressed)
-        if enterPressed then
-            checkKey()
-        end
-    end)
-    
-    -- Hover effects
-    submitBtn.MouseEnter:Connect(function()
-        submitBtn:TweenSize(UDim2.new(1, 0, 0, 52), "Out", "Quad", 0.1)
-    end)
-    
-    submitBtn.MouseLeave:Connect(function()
-        submitBtn:TweenSize(UDim2.new(1, 0, 0, 50), "Out", "Quad", 0.1)
+        if enterPressed then checkKey() end
     end)
     
     closePopup.MouseButton1Click:Connect(function()
-        -- Fade out animation
-        for i = 0, 1, 0.1 do
-            frame.BackgroundTransparency = 0.15 + i * 0.85
-            wait(0.03)
-        end
         popupGui:Destroy()
         callback(false)
     end)
     
-    -- Tampilkan popup dengan animasi fade in (tanpa background hitam)
+    -- Fade in
     frame.BackgroundTransparency = 1
-    
     for i = 0, 1, 0.1 do
         frame.BackgroundTransparency = 1 - i * 0.85
         wait(0.02)
@@ -388,9 +421,7 @@ function AnixlyUI:ShowKeySystem(config)
     frame.BackgroundTransparency = 0.15
 end
 
--- [REST OF THE CODE REMAINS THE SAME - Themes, Window Class, etc.]
-
--- Themes
+-- ===== THEMES =====
 local THEMES = {
     TOKYO_NIGHT = {
         name = "Tokyo Night",
@@ -446,8 +477,151 @@ local THEMES = {
         glow = Color3.fromRGB(221, 160, 221),
         activeTab = Color3.fromRGB(186, 85, 211),
         logText = Color3.fromRGB(255, 240, 245)
+    },
+    OCEAN = {
+        name = "Ocean",
+        primary = Color3.fromRGB(0, 200, 255),
+        mid = Color3.fromRGB(0, 100, 200),
+        dark = Color3.fromRGB(0, 20, 40),
+        headerBg = Color3.fromRGB(0, 50, 100),
+        accent = Color3.fromRGB(255, 200, 0),
+        glow = Color3.fromRGB(0, 255, 255),
+        activeTab = Color3.fromRGB(0, 150, 255),
+        logText = Color3.fromRGB(200, 230, 255)
+    },
+    SUNSET = {
+        name = "Sunset",
+        primary = Color3.fromRGB(255, 100, 100),
+        mid = Color3.fromRGB(255, 150, 50),
+        dark = Color3.fromRGB(50, 20, 30),
+        headerBg = Color3.fromRGB(100, 30, 50),
+        accent = Color3.fromRGB(255, 255, 100),
+        glow = Color3.fromRGB(255, 150, 150),
+        activeTab = Color3.fromRGB(200, 80, 120),
+        logText = Color3.fromRGB(255, 200, 200)
     }
 }
+
+-- ===== CUSTOM THEME BUILDER =====
+function AnixlyUI:CreateTheme(name, colors)
+    if not name or not colors then
+        AnixlyUI:ShowNotification({
+            Message = "Theme name and colors required!",
+            Theme = "error",
+            Duration = 3
+        })
+        return
+    end
+    
+    THEMES[name] = colors
+    AnixlyUI:ShowNotification({
+        Message = "Theme '" .. name .. "' created successfully!",
+        Theme = "success",
+        Duration = 2
+    })
+    return THEMES[name]
+end
+
+function AnixlyUI:GetThemes()
+    local themeList = {}
+    for name, theme in pairs(THEMES) do
+        table.insert(themeList, name)
+    end
+    return themeList
+end
+
+-- ===== SAVE/LOAD SYSTEM =====
+local ConfigStore = {}
+
+function AnixlyUI:SaveConfig(name, data)
+    if not name or not data then
+        AnixlyUI:ShowNotification({
+            Message = "Config name and data required!",
+            Theme = "error",
+            Duration = 3
+        })
+        return false
+    end
+    
+    -- Simpan ke store
+    ConfigStore[name] = data
+    
+    -- Simpan ke file (untuk persistent storage)
+    local success, err = pcall(function()
+        writefile("AnixlyConfig_" .. name .. ".json", game:GetService("HttpService"):JSONEncode(data))
+    end)
+    
+    if success then
+        AnixlyUI:ShowNotification({
+            Message = "Config '" .. name .. "' saved successfully!",
+            Theme = "success",
+            Duration = 2
+        })
+        return true
+    else
+        AnixlyUI:ShowNotification({
+            Message = "Failed to save config: " .. tostring(err),
+            Theme = "error",
+            Duration = 3
+        })
+        return false
+    end
+end
+
+function AnixlyUI:LoadConfig(name)
+    -- Coba load dari file
+    local success, data = pcall(function()
+        local content = readfile("AnixlyConfig_" .. name .. ".json")
+        return game:GetService("HttpService"):JSONDecode(content)
+    end)
+    
+    if success then
+        ConfigStore[name] = data
+        AnixlyUI:ShowNotification({
+            Message = "Config '" .. name .. "' loaded successfully!",
+            Theme = "success",
+            Duration = 2
+        })
+        return data
+    else
+        -- Fallback ke store
+        if ConfigStore[name] then
+            return ConfigStore[name]
+        end
+        
+        AnixlyUI:ShowNotification({
+            Message = "Config '" .. name .. "' not found!",
+            Theme = "error",
+            Duration = 3
+        })
+        return nil
+    end
+end
+
+function AnixlyUI:GetSavedConfigs()
+    local configs = {}
+    for name, _ in pairs(ConfigStore) do
+        table.insert(configs, name)
+    end
+    
+    -- Also scan files
+    local success, files = pcall(function()
+        return listfiles()
+    end)
+    
+    if success then
+        for _, file in ipairs(files) do
+            if file:match("AnixlyConfig_(.+)%.json") then
+                local name = file:match("AnixlyConfig_(.+)%.json")
+                if not table.find(configs, name) then
+                    table.insert(configs, name)
+                end
+            end
+        end
+    end
+    
+    return configs
+end
 
 -- UI Sizes
 local UI_WIDTH = IsMobile and 300 or 460
@@ -469,7 +643,8 @@ function AnixlyUI:CreateWindow(config)
     window.Theme = THEMES[config.Theme or "TOKYO_NIGHT"]
     window.Width = config.Size and config.Size.Width or UI_WIDTH
     window.Height = config.Size and config.Size.Height or UI_HEIGHT
-    window.UseParticles = config.UseParticles ~= false  -- Default true
+    window.UseParticles = config.UseParticles ~= false
+    window.ConfigData = {} -- Untuk menyimpan state
     
     -- Create GUI
     local ScreenGui = Instance.new("ScreenGui")
@@ -529,7 +704,6 @@ function AnixlyUI:CreateWindow(config)
     TitleLabel.TextXAlignment = Enum.TextXAlignment.Left
     TitleLabel.Parent = Header
     
-    -- Efek rainbow berjalan
     local hue = 0
     local rainbowConnection
     rainbowConnection = game:GetService("RunService").Heartbeat:Connect(function()
@@ -544,7 +718,7 @@ function AnixlyUI:CreateWindow(config)
     -- Window Controls
     local controlSize = IsMobile and 18 or 26
     
-    -- Minimize Button (ImageButton)
+    -- Minimize Button
     local MinimizeBtn = Instance.new("ImageButton")
     MinimizeBtn.Size = UDim2.new(0, controlSize, 0, controlSize)
     MinimizeBtn.Position = UDim2.new(1, -(controlSize * 2 + 10), 0.5, -controlSize / 2)
@@ -558,7 +732,7 @@ function AnixlyUI:CreateWindow(config)
     MinCorner.CornerRadius = UDim.new(1, 0)
     MinCorner.Parent = MinimizeBtn
     
-    -- Close Button (ImageButton)
+    -- Close Button
     local CloseBtn = Instance.new("ImageButton")
     CloseBtn.Size = UDim2.new(0, controlSize, 0, controlSize)
     CloseBtn.Position = UDim2.new(1, -(controlSize + 6), 0.5, -controlSize / 2)
@@ -574,6 +748,11 @@ function AnixlyUI:CreateWindow(config)
     
     CloseBtn.MouseButton1Click:Connect(function()
         ScreenGui:Destroy()
+        AnixlyUI:ShowNotification({
+            Message = "Window closed",
+            Theme = "info",
+            Duration = 2
+        })
     end)
     
     -- RESIZE HANDLE
@@ -619,7 +798,7 @@ function AnixlyUI:CreateWindow(config)
         end
     end)
     
-    -- Mini Icon (bisa di-drag)
+    -- Mini Icon
     local MiniIcon = Instance.new("TextButton")
     MiniIcon.Name = "MiniIcon"
     MiniIcon.Size = UDim2.new(0, IsMobile and 45 or 60, 0, IsMobile and 45 or 60)
@@ -715,12 +894,10 @@ function AnixlyUI:CreateWindow(config)
         end
     end)
     
-    -- Input handling (drag + resize)
+    -- Input handling
     local UIS = game:GetService("UserInputService")
     UIS.InputChanged:Connect(function(input)
         if input.UserInputType == Enum.UserInputType.MouseMovement or input.UserInputType == Enum.UserInputType.Touch then
-            
-            -- RESIZE
             if isResizing then
                 local delta = input.Position - resizeStartPos
                 local newW, newH = clampSize(startWidth + delta.X, startHeight + delta.Y)
@@ -730,7 +907,6 @@ function AnixlyUI:CreateWindow(config)
                 return
             end
             
-            -- DRAG MAIN WINDOW
             if dragging then
                 local delta = input.Position - dragStart
                 MainFrame.Position = UDim2.new(
@@ -741,7 +917,6 @@ function AnixlyUI:CreateWindow(config)
                 return
             end
             
-            -- DRAG MINI ICON
             if isDraggingMini then
                 local delta = input.Position - dragStartPos
                 miniDragDist = delta.Magnitude
@@ -787,6 +962,42 @@ function AnixlyUI:CreateWindow(config)
     contentArea.BackgroundTransparency = 1
     contentArea.Parent = MainFrame
     
+    -- Search Bar
+    local searchFrame = Instance.new("Frame")
+    searchFrame.Size = UDim2.new(1, -10, 0, 30)
+    searchFrame.Position = UDim2.new(0, 5, 0, 5)
+    searchFrame.BackgroundColor3 = Color3.fromRGB(30, 30, 40)
+    searchFrame.BackgroundTransparency = 0.2
+    searchFrame.BorderSizePixel = 0
+    searchFrame.Visible = false
+    searchFrame.Parent = contentArea
+    
+    local searchCorner = Instance.new("UICorner")
+    searchCorner.CornerRadius = UDim.new(0, 8)
+    searchCorner.Parent = searchFrame
+    
+    local searchIcon = Instance.new("TextLabel")
+    searchIcon.Size = UDim2.new(0, 30, 1, 0)
+    searchIcon.BackgroundTransparency = 1
+    searchIcon.Text = "🔍"
+    searchIcon.TextColor3 = Color3.fromRGB(150, 150, 150)
+    searchIcon.Font = Enum.Font.Gotham
+    searchIcon.TextSize = 16
+    searchIcon.Parent = searchFrame
+    
+    local searchBox = Instance.new("TextBox")
+    searchBox.Size = UDim2.new(1, -35, 1, 0)
+    searchBox.Position = UDim2.new(0, 30, 0, 0)
+    searchBox.BackgroundTransparency = 1
+    searchBox.PlaceholderText = "Cari fitur..."
+    searchBox.PlaceholderColor3 = Color3.fromRGB(100, 100, 120)
+    searchBox.Text = ""
+    searchBox.TextColor3 = Color3.new(1, 1, 1)
+    searchBox.Font = Enum.Font.Gotham
+    searchBox.TextSize = 14
+    searchBox.ClearTextOnFocus = false
+    searchBox.Parent = searchFrame
+    
     -- Tab System
     window.Tabs = {}
     window.TabButtons = {}
@@ -797,12 +1008,21 @@ function AnixlyUI:CreateWindow(config)
         tab.Icon = icon
         tab.Container = Instance.new("ScrollingFrame")
         tab.Container.Size = UDim2.new(1, 0, 1, 0)
+        tab.Container.Position = UDim2.new(0, 0, 0, 40) -- Kasih space untuk search bar
         tab.Container.BackgroundTransparency = 1
         tab.Container.Visible = false
         tab.Container.ScrollBarThickness = IsMobile and 3 or 2
         tab.Container.ScrollBarImageColor3 = window.Theme.accent
         tab.Container.AutomaticCanvasSize = Enum.AutomaticSize.Y
         tab.Container.Parent = contentArea
+        
+        -- Show search bar untuk tab ini
+        if name ~= "Settings" then
+            searchFrame.Visible = true
+            tab.Container.Position = UDim2.new(0, 0, 0, 40)
+        else
+            tab.Container.Position = UDim2.new(0, 0, 0, 5)
+        end
         
         local layout = Instance.new("UIListLayout")
         layout.Padding = UDim.new(0, IsMobile and 5 or 7)
@@ -859,6 +1079,9 @@ function AnixlyUI:CreateWindow(config)
         
         btn.MouseButton1Click:Connect(function()
             for _, t in ipairs(window.TabButtons) do
+                -- Animasi fade out
+                t.container:TweenSize(UDim2.new(1, 0, 1, 0), "Out", "Quad", 0.1)
+                task.wait(0.05)
                 t.container.Visible = false
                 t.btn.BackgroundColor3 = Color3.fromRGB(20, 18, 32)
                 t.stroke.Color = Color3.fromRGB(50, 30, 90)
@@ -867,10 +1090,49 @@ function AnixlyUI:CreateWindow(config)
             end
             
             tab.Container.Visible = true
+            tab.Container.Size = UDim2.new(0, 0, 1, 0) -- Mulai dari 0 lebar
+            tab.Container:TweenSize(UDim2.new(1, 0, 1, 0), "Out", "Back", 0.3) -- Animasi muncul
+            
             btn.BackgroundColor3 = window.Theme.activeTab
             btnStroke.Color = window.Theme.accent
             iconLabel.ImageColor3 = Color3.new(1, 1, 1)
             textLabel.TextColor3 = Color3.new(1, 1, 1)
+            
+            -- Show/hide search bar
+            if name ~= "Settings" then
+                searchFrame.Visible = true
+            else
+                searchFrame.Visible = false
+            end
+        end)
+        
+        -- Search functionality
+        searchBox:GetPropertyChangedSignal("Text"):Connect(function()
+            local searchText = searchBox.Text:lower()
+            for _, section in ipairs(tab.Sections) do
+                for _, item in ipairs(section.Items) do
+                    if item:IsA("TextLabel") or (item:IsA("TextButton") and item.Text) then
+                        local text = item.Text:lower()
+                        if searchText == "" then
+                            item.Visible = section.Expanded
+                        else
+                            item.Visible = section.Expanded and text:find(searchText) ~= nil
+                        end
+                    elseif item:IsA("Frame") then
+                        -- Cek label di dalam frame
+                        local found = false
+                        for _, child in ipairs(item:GetChildren()) do
+                            if child:IsA("TextLabel") and child.Text then
+                                if child.Text:lower():find(searchText) then
+                                    found = true
+                                    break
+                                end
+                            end
+                        end
+                        item.Visible = section.Expanded and (found or searchText == "")
+                    end
+                end
+            end
         end)
         
         -- Section system
@@ -947,7 +1209,7 @@ function AnixlyUI:CreateWindow(config)
             
             table.insert(tab.Sections, section)
             
-            -- Methods
+            -- TOGGLE
             function section:AddToggle(config)
                 local frame = Instance.new("Frame")
                 frame.Size = UDim2.new(1, 0, 0, COMPONENT_HEIGHT)
@@ -1005,14 +1267,21 @@ function AnixlyUI:CreateWindow(config)
                 
                 local state = config.Default or false
                 
+                -- Simpan state untuk config
+                if not window.ConfigData[config.Text] then
+                    window.ConfigData[config.Text] = state
+                end
+                
                 btn.MouseButton1Click:Connect(function()
                     state = not state
                     toggle.BackgroundColor3 = state and Color3.fromRGB(30, 180, 110) or Color3.fromRGB(180, 40, 50)
                     knob.Position = state and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
+                    window.ConfigData[config.Text] = state
                     if config.Callback then config.Callback(state) end
                 end)
             end
             
+            -- BUTTON
             function section:AddButton(config)
                 local btn = Instance.new("TextButton")
                 btn.Size = UDim2.new(1, 0, 0, COMPONENT_HEIGHT)
@@ -1033,10 +1302,18 @@ function AnixlyUI:CreateWindow(config)
                 btnCorner.Parent = btn
                 
                 btn.MouseButton1Click:Connect(function()
-                    if config.Callback then config.Callback() end
+                    if config.Callback then 
+                        config.Callback()
+                        AnixlyUI:ShowNotification({
+                            Message = "Button '" .. config.Text .. "' clicked!",
+                            Theme = "info",
+                            Duration = 2
+                        })
+                    end
                 end)
             end
             
+            -- LABEL
             function section:AddLabel(text)
                 local label = Instance.new("TextLabel")
                 label.Size = UDim2.new(1, 0, 0, 25)
@@ -1054,6 +1331,7 @@ function AnixlyUI:CreateWindow(config)
                 table.insert(section.Items, label)
             end
             
+            -- DROPDOWN
             function section:AddDropdown(config)
                 local frame = Instance.new("Frame")
                 frame.Size = UDim2.new(1, 0, 0, COMPONENT_HEIGHT)
@@ -1141,6 +1419,7 @@ function AnixlyUI:CreateWindow(config)
                         
                         itemBtn.MouseButton1Click:Connect(function()
                             valueLabel.Text = option
+                            window.ConfigData[config.Text] = option
                             dropdownOpen = false
                             dropdownFrame.Visible = false
                             dropdownFrame.Size = UDim2.new(1, 0, 0, 0)
@@ -1161,11 +1440,357 @@ function AnixlyUI:CreateWindow(config)
                 end)
             end
             
+            -- SLIDER
+            function section:AddSlider(config)
+                local frame = Instance.new("Frame")
+                frame.Size = UDim2.new(1, 0, 0, 50)
+                frame.LayoutOrder = tab.CurrentOrder
+                frame.BackgroundColor3 = Color3.fromRGB(16, 15, 24)
+                frame.BorderSizePixel = 0
+                frame.Parent = tab.Container
+                frame.Visible = section.Expanded
+                tab.CurrentOrder = tab.CurrentOrder + 1
+                
+                table.insert(section.Items, frame)
+                
+                local frameCorner = Instance.new("UICorner")
+                frameCorner.CornerRadius = UDim.new(0, 8)
+                frameCorner.Parent = frame
+                
+                local label = Instance.new("TextLabel")
+                label.Size = UDim2.new(1, -80, 0, 20)
+                label.Position = UDim2.new(0, 10, 0, 5)
+                label.BackgroundTransparency = 1
+                label.Text = config.Text
+                label.TextColor3 = Color3.fromRGB(210, 200, 230)
+                label.Font = Enum.Font.GothamBold
+                label.TextSize = TEXT_SIZE_NORMAL
+                label.TextXAlignment = Enum.TextXAlignment.Left
+                label.Parent = frame
+                
+                local valueLabel = Instance.new("TextLabel")
+                valueLabel.Size = UDim2.new(0, 70, 0, 20)
+                valueLabel.Position = UDim2.new(1, -75, 0, 5)
+                valueLabel.BackgroundTransparency = 1
+                valueLabel.Text = tostring(config.Default or config.Min or 0)
+                valueLabel.TextColor3 = window.Theme.accent
+                valueLabel.Font = Enum.Font.GothamBold
+                valueLabel.TextSize = TEXT_SIZE_NORMAL
+                valueLabel.TextXAlignment = Enum.TextXAlignment.Right
+                valueLabel.Parent = frame
+                
+                local sliderBg = Instance.new("Frame")
+                sliderBg.Size = UDim2.new(1, -20, 0, 8)
+                sliderBg.Position = UDim2.new(0, 10, 0, 30)
+                sliderBg.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+                sliderBg.BorderSizePixel = 0
+                sliderBg.Parent = frame
+                
+                local bgCorner = Instance.new("UICorner")
+                bgCorner.CornerRadius = UDim.new(1, 0)
+                bgCorner.Parent = sliderBg
+                
+                local minVal = config.Min or 0
+                local maxVal = config.Max or 100
+                local defaultValue = config.Default or minVal
+                
+                local sliderFill = Instance.new("Frame")
+                sliderFill.Size = UDim2.new((defaultValue - minVal) / (maxVal - minVal), 0, 1, 0)
+                sliderFill.BackgroundColor3 = window.Theme.accent
+                sliderFill.BorderSizePixel = 0
+                sliderFill.Parent = sliderBg
+                
+                local fillCorner = Instance.new("UICorner")
+                fillCorner.CornerRadius = UDim.new(1, 0)
+                fillCorner.Parent = sliderFill
+                
+                local sliderBtn = Instance.new("TextButton")
+                sliderBtn.Size = UDim2.new(1, 0, 1, 0)
+                sliderBtn.BackgroundTransparency = 1
+                sliderBtn.Text = ""
+                sliderBtn.Parent = frame
+                
+                local dragging = false
+                local value = defaultValue
+                
+                window.ConfigData[config.Text] = value
+                
+                local function updateSlider(input)
+                    local pos = input.Position.X
+                    local absPos = sliderBg.AbsolutePosition.X
+                    local absSize = sliderBg.AbsoluteSize.X
+                    
+                    if absSize <= 0 then return end
+                    
+                    local relative = math.clamp((pos - absPos) / absSize, 0, 1)
+                    value = minVal + (maxVal - minVal) * relative
+                    value = math.floor(value * 100) / 100 -- 2 decimal
+                    
+                    sliderFill.Size = UDim2.new(relative, 0, 1, 0)
+                    valueLabel.Text = tostring(value)
+                    window.ConfigData[config.Text] = value
+                    
+                    if config.Callback then config.Callback(value) end
+                end
+                
+                sliderBtn.InputBegan:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        dragging = true
+                        updateSlider(input)
+                    end
+                end)
+                
+                sliderBtn.InputEnded:Connect(function(input)
+                    if input.UserInputType == Enum.UserInputType.MouseButton1 then
+                        dragging = false
+                    end
+                end)
+                
+                game:GetService("UserInputService").InputChanged:Connect(function(input)
+                    if dragging and input.UserInputType == Enum.UserInputType.MouseMovement then
+                        updateSlider(input)
+                    end
+                end)
+            end
+            
+            -- KEYBIND
+            function section:AddKeybind(config)
+                local frame = Instance.new("Frame")
+                frame.Size = UDim2.new(1, 0, 0, COMPONENT_HEIGHT)
+                frame.LayoutOrder = tab.CurrentOrder
+                frame.BackgroundColor3 = Color3.fromRGB(16, 15, 24)
+                frame.BorderSizePixel = 0
+                frame.Parent = tab.Container
+                frame.Visible = section.Expanded
+                tab.CurrentOrder = tab.CurrentOrder + 1
+                
+                table.insert(section.Items, frame)
+                
+                local frameCorner = Instance.new("UICorner")
+                frameCorner.CornerRadius = UDim.new(0, 8)
+                frameCorner.Parent = frame
+                
+                local label = Instance.new("TextLabel")
+                label.Size = UDim2.new(1, -80, 1, 0)
+                label.Position = UDim2.new(0, 10, 0, 0)
+                label.BackgroundTransparency = 1
+                label.Text = config.Text
+                label.TextColor3 = Color3.fromRGB(210, 200, 230)
+                label.Font = Enum.Font.GothamBold
+                label.TextSize = TEXT_SIZE_NORMAL
+                label.TextXAlignment = Enum.TextXAlignment.Left
+                label.Parent = frame
+                
+                local keyLabel = Instance.new("TextLabel")
+                keyLabel.Size = UDim2.new(0, 70, 1, 0)
+                keyLabel.Position = UDim2.new(1, -75, 0, 0)
+                keyLabel.BackgroundTransparency = 1
+                keyLabel.Text = config.Default or "None"
+                keyLabel.TextColor3 = window.Theme.accent
+                keyLabel.Font = Enum.Font.GothamBold
+                keyLabel.TextSize = TEXT_SIZE_NORMAL
+                keyLabel.TextXAlignment = Enum.TextXAlignment.Right
+                keyLabel.Parent = frame
+                
+                local btn = Instance.new("TextButton")
+                btn.Size = UDim2.new(1, 0, 1, 0)
+                btn.BackgroundTransparency = 1
+                btn.Text = ""
+                btn.Parent = frame
+                
+                local listening = false
+                local currentKey = config.Default or "None"
+                
+                window.ConfigData[config.Text] = currentKey
+                
+                btn.MouseButton1Click:Connect(function()
+                    listening = true
+                    keyLabel.Text = "..."
+                end)
+                
+                game:GetService("UserInputService").InputBegan:Connect(function(input)
+                    if listening and input.UserInputType == Enum.UserInputType.Keyboard then
+                        listening = false
+                        local keyName = input.KeyCode.Name
+                        keyLabel.Text = keyName
+                        currentKey = keyName
+                        window.ConfigData[config.Text] = keyName
+                        if config.Callback then config.Callback(keyName) end
+                    end
+                end)
+            end
+            
+            -- PROGRESS BAR
+            function section:AddProgressBar(config)
+                local frame = Instance.new("Frame")
+                frame.Size = UDim2.new(1, 0, 0, 40)
+                frame.LayoutOrder = tab.CurrentOrder
+                frame.BackgroundColor3 = Color3.fromRGB(16, 15, 24)
+                frame.BorderSizePixel = 0
+                frame.Parent = tab.Container
+                frame.Visible = section.Expanded
+                tab.CurrentOrder = tab.CurrentOrder + 1
+                
+                table.insert(section.Items, frame)
+                
+                local frameCorner = Instance.new("UICorner")
+                frameCorner.CornerRadius = UDim.new(0, 8)
+                frameCorner.Parent = frame
+                
+                local label = Instance.new("TextLabel")
+                label.Size = UDim2.new(1, -80, 0, 20)
+                label.Position = UDim2.new(0, 10, 0, 5)
+                label.BackgroundTransparency = 1
+                label.Text = config.Text
+                label.TextColor3 = Color3.fromRGB(210, 200, 230)
+                label.Font = Enum.Font.GothamBold
+                label.TextSize = TEXT_SIZE_NORMAL
+                label.TextXAlignment = Enum.TextXAlignment.Left
+                label.Parent = frame
+                
+                local percentLabel = Instance.new("TextLabel")
+                percentLabel.Size = UDim2.new(0, 70, 0, 20)
+                percentLabel.Position = UDim2.new(1, -75, 0, 5)
+                percentLabel.BackgroundTransparency = 1
+                percentLabel.Text = "0%"
+                percentLabel.TextColor3 = window.Theme.accent
+                percentLabel.Font = Enum.Font.GothamBold
+                percentLabel.TextSize = TEXT_SIZE_NORMAL
+                percentLabel.TextXAlignment = Enum.TextXAlignment.Right
+                percentLabel.Parent = frame
+                
+                local progressBg = Instance.new("Frame")
+                progressBg.Size = UDim2.new(1, -20, 0, 8)
+                progressBg.Position = UDim2.new(0, 10, 0, 27)
+                progressBg.BackgroundColor3 = Color3.fromRGB(40, 40, 50)
+                progressBg.BorderSizePixel = 0
+                progressBg.Parent = frame
+                
+                local bgCorner = Instance.new("UICorner")
+                bgCorner.CornerRadius = UDim.new(1, 0)
+                bgCorner.Parent = progressBg
+                
+                local progressFill = Instance.new("Frame")
+                progressFill.Size = UDim2.new(0, 0, 1, 0)
+                progressFill.BackgroundColor3 = window.Theme.accent
+                progressFill.BorderSizePixel = 0
+                progressFill.Parent = progressBg
+                
+                local fillCorner = Instance.new("UICorner")
+                fillCorner.CornerRadius = UDim.new(1, 0)
+                fillCorner.Parent = progressFill
+                
+                -- Return object dengan method SetProgress
+                return {
+                    SetProgress = function(percent)
+                        percent = math.clamp(percent, 0, 100)
+                        progressFill.Size = UDim2.new(percent/100, 0, 1, 0)
+                        percentLabel.Text = math.floor(percent) .. "%"
+                        window.ConfigData[config.Text .. "_progress"] = percent
+                    end
+                }
+            end
+            
             return section
         end
         
         return tab
     end
+    
+    -- SAVE/LOAD METHODS
+    function window:SaveConfig(name)
+        local data = {
+            window = {
+                title = self.Title,
+                theme = self.Theme.name,
+                size = {width = self.Width, height = self.Height}
+            },
+            components = self.ConfigData
+        }
+        
+        return AnixlyUI:SaveConfig(name, data)
+    end
+    
+    function window:LoadConfig(name)
+        local data = AnixlyUI:LoadConfig(name)
+        if data and data.components then
+            self.ConfigData = data.components
+            AnixlyUI:ShowNotification({
+                Message = "Config loaded! UI state restored.",
+                Theme = "success",
+                Duration = 3
+            })
+            return true
+        end
+        return false
+    end
+    
+    -- THEME METHODS
+    function window:SetTheme(themeName)
+        if THEMES[themeName] then
+            self.Theme = THEMES[themeName]
+            
+            -- Update UI elements dengan theme baru
+            Glow.BackgroundColor3 = self.Theme.glow
+            Header.BackgroundColor3 = self.Theme.headerBg
+            MiniStroke.Color = self.Theme.accent
+            
+            AnixlyUI:ShowNotification({
+                Message = "Theme changed to " .. self.Theme.name,
+                Theme = "info",
+                Duration = 2
+            })
+        else
+            AnixlyUI:ShowNotification({
+                Message = "Theme '" .. themeName .. "' not found!",
+                Theme = "error",
+                Duration = 3
+            })
+        end
+    end
+    
+    function window:GetCurrentTheme()
+        return self.Theme
+    end
+    
+    -- SETTINGS TAB (otomatis ditambahkan)
+    local settingsTab = window:CreateTab("Settings", "rbxassetid://6023426945")
+    local settingsSection = settingsTab:AddSection("Configuration")
+    
+    settingsSection:AddDropdown({
+        Text = "Theme",
+        Options = AnixlyUI:GetThemes(),
+        Default = window.Theme.name,
+        Callback = function(option)
+            window:SetTheme(option)
+        end
+    })
+    
+    settingsSection:AddButton({
+        Text = "Save Current Config",
+        Callback = function()
+            local name = "Config_" .. os.date("%Y%m%d_%H%M%S")
+            window:SaveConfig(name)
+        end
+    })
+    
+    settingsSection:AddButton({
+        Text = "Load Last Config",
+        Callback = function()
+            local configs = AnixlyUI:GetSavedConfigs()
+            if #configs > 0 then
+                window:LoadConfig(configs[#configs])
+            else
+                AnixlyUI:ShowNotification({
+                    Message = "No saved configs found!",
+                    Theme = "warning",
+                    Duration = 3
+                })
+            end
+        end
+    })
+    
+    settingsSection:AddLabel("Version 2.0 - Complete Edition")
     
     -- Show first tab
     if #window.Tabs > 0 then
