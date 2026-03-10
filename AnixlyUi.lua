@@ -1,4 +1,4 @@
--- Anixly UI Framework - Complete Edition with All Features
+-- Anixly UI Framework - Complete Edition with Fixed Save/Load
 local AnixlyUI = {}
 local IsMobile = game:GetService("UserInputService").TouchEnabled
 
@@ -7,7 +7,7 @@ function AnixlyUI:ShowNotification(config)
     config = config or {}
     local message = config.Message or "Notification"
     local duration = config.Duration or 3
-    local theme = config.Theme or "info" -- info, success, error, warning
+    local theme = config.Theme or "info"
     local title = config.Title or "INFO"
     
     local colors = {
@@ -477,28 +477,6 @@ local THEMES = {
         glow = Color3.fromRGB(221, 160, 221),
         activeTab = Color3.fromRGB(186, 85, 211),
         logText = Color3.fromRGB(255, 240, 245)
-    },
-    OCEAN = {
-        name = "Ocean",
-        primary = Color3.fromRGB(0, 200, 255),
-        mid = Color3.fromRGB(0, 100, 200),
-        dark = Color3.fromRGB(0, 20, 40),
-        headerBg = Color3.fromRGB(0, 50, 100),
-        accent = Color3.fromRGB(255, 200, 0),
-        glow = Color3.fromRGB(0, 255, 255),
-        activeTab = Color3.fromRGB(0, 150, 255),
-        logText = Color3.fromRGB(200, 230, 255)
-    },
-    SUNSET = {
-        name = "Sunset",
-        primary = Color3.fromRGB(255, 100, 100),
-        mid = Color3.fromRGB(255, 150, 50),
-        dark = Color3.fromRGB(50, 20, 30),
-        headerBg = Color3.fromRGB(100, 30, 50),
-        accent = Color3.fromRGB(255, 255, 100),
-        glow = Color3.fromRGB(255, 150, 150),
-        activeTab = Color3.fromRGB(200, 80, 120),
-        logText = Color3.fromRGB(255, 200, 200)
     }
 }
 
@@ -524,7 +502,7 @@ end
 
 function AnixlyUI:GetThemes()
     local themeList = {}
-    for name, theme in pairs(THEMES) do
+    for name, _ in pairs(THEMES) do
         table.insert(themeList, name)
     end
     return themeList
@@ -644,7 +622,7 @@ function AnixlyUI:CreateWindow(config)
     window.Width = config.Size and config.Size.Width or UI_WIDTH
     window.Height = config.Size and config.Size.Height or UI_HEIGHT
     window.UseParticles = config.UseParticles ~= false
-    window.ConfigData = {} -- Untuk menyimpan state
+    window.ConfigData = {} -- Untuk menyimpan state semua komponen
     
     -- Create GUI
     local ScreenGui = Instance.new("ScreenGui")
@@ -1267,16 +1245,15 @@ function AnixlyUI:CreateWindow(config)
                 
                 local state = config.Default or false
                 
-                -- Simpan state untuk config
-                if not window.ConfigData[config.Text] then
-                    window.ConfigData[config.Text] = state
-                end
+                -- Simpan state untuk config dengan key yang unik
+                local configKey = "Toggle_" .. config.Text
+                window.ConfigData[configKey] = state
                 
                 btn.MouseButton1Click:Connect(function()
                     state = not state
                     toggle.BackgroundColor3 = state and Color3.fromRGB(30, 180, 110) or Color3.fromRGB(180, 40, 50)
                     knob.Position = state and UDim2.new(1, -19, 0.5, -8) or UDim2.new(0, 3, 0.5, -8)
-                    window.ConfigData[config.Text] = state
+                    window.ConfigData[configKey] = state
                     if config.Callback then config.Callback(state) end
                 end)
             end
@@ -1394,6 +1371,11 @@ function AnixlyUI:CreateWindow(config)
                 dropdownStroke.Parent = dropdownFrame
                 
                 local itemHeight = 28
+                
+                -- Simpan state untuk config
+                local configKey = "Dropdown_" .. config.Text
+                window.ConfigData[configKey] = config.Default or "-"
+                
                 local function updateDropdown()
                     for _, child in pairs(dropdownFrame:GetChildren()) do
                         if child:IsA("TextButton") then
@@ -1419,7 +1401,8 @@ function AnixlyUI:CreateWindow(config)
                         
                         itemBtn.MouseButton1Click:Connect(function()
                             valueLabel.Text = option
-                            window.ConfigData[config.Text] = option
+                            config.Default = option
+                            window.ConfigData[configKey] = option
                             dropdownOpen = false
                             dropdownFrame.Visible = false
                             dropdownFrame.Size = UDim2.new(1, 0, 0, 0)
@@ -1513,7 +1496,8 @@ function AnixlyUI:CreateWindow(config)
                 local dragging = false
                 local value = defaultValue
                 
-                window.ConfigData[config.Text] = value
+                local configKey = "Slider_" .. config.Text
+                window.ConfigData[configKey] = value
                 
                 local function updateSlider(input)
                     local pos = input.Position.X
@@ -1524,11 +1508,11 @@ function AnixlyUI:CreateWindow(config)
                     
                     local relative = math.clamp((pos - absPos) / absSize, 0, 1)
                     value = minVal + (maxVal - minVal) * relative
-                    value = math.floor(value * 100) / 100 -- 2 decimal
+                    value = math.floor(value * 100) / 100
                     
                     sliderFill.Size = UDim2.new(relative, 0, 1, 0)
                     valueLabel.Text = tostring(value)
-                    window.ConfigData[config.Text] = value
+                    window.ConfigData[configKey] = value
                     
                     if config.Callback then config.Callback(value) end
                 end
@@ -1601,7 +1585,8 @@ function AnixlyUI:CreateWindow(config)
                 local listening = false
                 local currentKey = config.Default or "None"
                 
-                window.ConfigData[config.Text] = currentKey
+                local configKey = "Keybind_" .. config.Text
+                window.ConfigData[configKey] = currentKey
                 
                 btn.MouseButton1Click:Connect(function()
                     listening = true
@@ -1614,7 +1599,7 @@ function AnixlyUI:CreateWindow(config)
                         local keyName = input.KeyCode.Name
                         keyLabel.Text = keyName
                         currentKey = keyName
-                        window.ConfigData[config.Text] = keyName
+                        window.ConfigData[configKey] = keyName
                         if config.Callback then config.Callback(keyName) end
                     end
                 end)
@@ -1720,6 +1705,9 @@ function AnixlyUI:CreateWindow(config)
                 Theme = "success",
                 Duration = 3
             })
+            
+            -- Apply loaded config ke UI (perlu implementasi ulang state)
+            -- Untuk sekarang kita simpan dulu di ConfigData
             return true
         end
         return false
@@ -1757,9 +1745,11 @@ function AnixlyUI:CreateWindow(config)
     local settingsTab = window:CreateTab("Settings", "rbxassetid://6023426945")
     local settingsSection = settingsTab:AddSection("Configuration")
     
+    -- Theme dropdown yang lebih rapi
+    local themeOptions = AnixlyUI:GetThemes()
     settingsSection:AddDropdown({
         Text = "Theme",
-        Options = AnixlyUI:GetThemes(),
+        Options = themeOptions,
         Default = window.Theme.name,
         Callback = function(option)
             window:SetTheme(option)
@@ -1789,6 +1779,19 @@ function AnixlyUI:CreateWindow(config)
             end
         end
     })
+    
+    -- List saved configs
+    local configList = AnixlyUI:GetSavedConfigs()
+    if #configList > 0 then
+        settingsSection:AddDropdown({
+            Text = "Load Config",
+            Options = configList,
+            Default = configList[#configList],
+            Callback = function(option)
+                window:LoadConfig(option)
+            end
+        })
+    end
     
     settingsSection:AddLabel("Version 2.0 - Complete Edition")
     
